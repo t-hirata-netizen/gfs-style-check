@@ -8,11 +8,16 @@
   const Q_IPO=21;       // Q22 IPO（タイプ判定には使わない）
   const CLOSE=60;       // 「僅差」の目安：多い方の割合がこの値以下
 
+  // 質問の重み（2026-10 オーナーと合意）。元に戻すときは Q_WEIGHT={}、AXIS_WEIGHT=[1,1,1,1] にする
+  const Q_WEIGHT={19:2};          // Q20（必修講義でどちらが面白そうだったか）は本人の実感なので2倍
+  const AXIS_WEIGHT=[1,1.5,1,1];  // 判断材料の軸（何を見て判断するか）はテクニカル／ファンダの定義そのものなので1.5倍
+  const weightOf=(i,ax)=>(Q_WEIGHT[i]??1)*AXIS_WEIGHT[ax];
+
   // ans: 各問の回答（-2,-1,1,2）、axisOf: 各問の軸番号（Q[i][0]）。軸が null の問はタイプ判定に使わない
+  // 返り値の axis は軸ごとの重み付き合計、axisMax はその軸で取りうる最大値（結果画面のバーに使う）
   function score(ans, axisOf){
-    const axis=[0,0,0,0];
-    let n=0;
-    ans.forEach((v,i)=>{if(axisOf[i]==null)return; axis[axisOf[i]]+=v; n++});
+    const axis=[0,0,0,0], axisMax=[0,0,0,0];
+    ans.forEach((v,i)=>{const ax=axisOf[i]; if(ax==null)return; const w=weightOf(i,ax); axis[ax]+=v*w; axisMax[ax]+=2*w});
     const total=axis.reduce((s,x)=>s+x,0);
     let key;
     if(total<0)key="tech"; else if(total>0)key="fund";
@@ -20,10 +25,10 @@
       const t=axis[1]||axis[0]||axis[3]||axis[2];
       key=t<0?"tech":"fund";
     }
-    const max=2*n;
+    const max=axisMax.reduce((s,x)=>s+x,0);
     let pb=Math.round(((total+max)/(2*max))*100);
     if(pb===50)pb=key==="fund"?51:49;
-    return {key,axis,pa:100-pb,pb};
+    return {key,axis,axisMax,pa:100-pb,pb};
   }
 
   // 結果画面に出す講義。一番上1つ（main）＋あわせて2つ＋興味に合わせた講義（アメリカ株・IPO）
@@ -44,7 +49,7 @@
       if(ans[Q_TREND]===2)subs.push({id:"takezou",tag:"伸びる業界・テーマを探したいなら"});
       if(ans[Q_DIVIDEND]>=1)subs.push({id:"ricky",tag:"配当・優待を狙うなら"});
       if(close)subs.push({id:"ichikawa",tag:"チャートも組み合わせたいなら"});
-      if(r.axis[0]>=6)subs.push({id:"hemu",tag:"割安な株をじっくり持ちたいなら"});
+      if(r.axis[0]>=0.6*r.axisMax[0])subs.push({id:"hemu",tag:"割安な株をじっくり持ちたいなら"});
       fill=[{id:"ichikawa",tag:"チャートも組み合わせたいなら"},{id:"hemu",tag:"割安な株をじっくり持ちたいなら"}];
     }
     const used=new Set([main.id]), out=[{...main,main:true}];

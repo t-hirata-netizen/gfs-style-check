@@ -5,18 +5,20 @@ const fs=require("node:fs");
 const path=require("node:path");
 const {score,pickCourses}=require("../score.js");
 
-// 今の質問の並び（4軸 × 5問）
-const AXIS_OF=[0,0,0,0,0, 1,1,1,1,1, 2,2,2,2,2, 3,3,3,3,3];
+// 今の質問の並び（タイプ判定に使う20問）。Q13（番号12）は判断材料の軸
+const AXIS_OF=[0,0,0,0,0, 1,1,1,1,1, 2,2,1,2,2, 3,3,3,3,3];
 const fill=v=>new Array(20).fill(v);
 // 軸ごとの回答を指定して20問分の回答を作る（各軸の5問に同じ値を入れる）
 const byAxis=vals=>AXIS_OF.map(a=>vals[a]);
+// 再現できる乱数（mulberry32）。同じ種なら毎回同じ回答列になる
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
 // index.html の質問（[軸, "A", "B"]）を読む。軸が null の問はタイプ判定に使わない
 const HTML=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const Q_ROWS=(()=>{const b=HTML.slice(HTML.indexOf("const Q=["),HTML.indexOf("];",HTML.indexOf("const Q=[")));
   return [...b.matchAll(/^\s*\[(\d|null),"([^"]*)","([^"]*)"\]/gm)].map(r=>({ax:r[1]==="null"?null:Number(r[1]),a:r[2],b:r[3]}))})();
 
-test("index.html の質問：タイプ判定用20問（4軸×5問）＋興味の2問", ()=>{
+test("index.html の質問：タイプ判定用20問＋興味の2問、Q13は判断材料", ()=>{
   assert.equal(Q_ROWS.length,22);
   assert.deepEqual(Q_ROWS.slice(0,20).map(r=>r.ax),AXIS_OF);
   assert.deepEqual(Q_ROWS.slice(20).map(r=>r.ax),[null,null]);
@@ -24,6 +26,8 @@ test("index.html の質問：タイプ判定用20問（4軸×5問）＋興味の
   assert.match(Q_ROWS[4].b,/配当|優待/);        // Q5
   assert.match(Q_ROWS[7].a,/ルール|パターン/);  // Q8
   assert.match(Q_ROWS[8].b,/伸びそうな業界/);   // Q9
+  assert.match(Q_ROWS[12].a,/決算書/);          // Q13
+  assert.match(Q_ROWS[19].a,/必修講義/);        // Q20（重み2倍）
   assert.match(Q_ROWS[20].b,/アメリカ/);        // Q21
   assert.match(Q_ROWS[21].b,/上場して間もない/); // Q22
 });
@@ -42,7 +46,9 @@ test("A寄りばかり → テクニカル、100%", ()=>{
   const r=score(fill(-2),AXIS_OF);
   assert.equal(r.key,"tech");
   assert.deepEqual([r.pa,r.pb],[100,0]);
-  assert.deepEqual(r.axis,[-10,-10,-10,-10]);
+  // 投資期間5問、判断材料6問×1.5、時間の使い方4問、性格5問（Q20は2倍）
+  assert.deepEqual(r.axis,[-10,-18,-8,-12]);
+  assert.deepEqual(r.axisMax,[10,18,8,12]);
 });
 
 test("B寄りばかり → ファンダメンタルズ、100%", ()=>{
@@ -56,46 +62,58 @@ test("「やや」だけでも方向どおりに決まる", ()=>{
   assert.equal(score(fill(1),AXIS_OF).key,"fund");
 });
 
-test("合計がわずかにマイナス → テクニカル、わずかにプラス → ファンダ", ()=>{
-  const a=fill(1); a[0]=-2; a[1]=-2; a[2]=-2; a[3]=-2; a[4]=-2; a[5]=-2; a[6]=-2; // 7×-2 + 13×1 = -1
-  assert.equal(score(a,AXIS_OF).key,"tech");
-  const b=a.map(v=>-v);
-  assert.equal(score(b,AXIS_OF).key,"fund");
+test("重み：Q20は2倍、判断材料（Q13を含む）は1.5倍、ほかは1倍", ()=>{
+  const r0=score(fill(1),AXIS_OF);
+  const flip=i=>{const a=fill(1); a[i]=-1; return score(a,AXIS_OF)};
+  assert.equal(r0.axis[3]-flip(19).axis[3],4);   // Q20：+1→-1 で 2×2
+  assert.equal(r0.axis[3]-flip(15).axis[3],2);   // Q16：1倍
+  assert.equal(r0.axis[1]-flip(5).axis[1],3);    // Q6：1.5倍
+  assert.equal(r0.axis[1]-flip(12).axis[1],3);   // Q13：判断材料なので1.5倍
+  assert.equal(r0.axis[2]-flip(10).axis[2],2);   // Q11：1倍
 });
 
-test("交互（A→B→A→B…）は同点。各軸の偏りで決まる", ()=>{
-  // -2,2,-2,2,... 各軸5問なので軸ごとに -2 か +2 が残る
-  const alt=AXIS_OF.map((_,i)=>i%2===0?-2:2);
-  const r=score(alt,AXIS_OF);
-  assert.equal(r.axis.reduce((s,x)=>s+x,0),0);
-  assert.deepEqual(r.axis,[-2,2,-2,2]);
-  assert.equal(r.key,"fund"); // 判断材料(軸1)が +2
-  assert.deepEqual([r.pa,r.pb],[49,51]);
+test("重み：ほかが少しファンダ寄りでも、Q20と判断材料で強くテクニカルならテクニカル", ()=>{
+  // 投資期間・時間の使い方・性格（Q20以外）は「Bにやや近い」、判断材料とQ20は「Aにやや近い」
+  const a=AXIS_OF.map((ax,i)=>ax===1||i===19?-1:1);
+  const r=score(a,AXIS_OF);
+  // 重みなしなら +13-7=+6 でファンダ。重み付きでは 5-9+4+(4-2)=+2 … まだファンダ
+  assert.equal(r.key,"fund");
+  // Q20を「Aにとても近い」にすると 5-9+4+(4-4)=0 → 同点、判断材料がマイナスなのでテクニカル
+  a[19]=-2;
+  assert.equal(score(a,AXIS_OF).key,"tech");
 });
+
+// 合計がちょうど0になる回答（どの軸で決まるかを確かめる）
+const tie=a=>{const r=score(a,AXIS_OF); assert.equal(r.axis.reduce((s,x)=>s+x,0),0,"合計が0になっていない"); return r};
+const AX1_ZERO={5:1,6:-1,7:1,8:-1,9:1,12:-1}; // 判断材料の6問を打ち消し合わせる
+const build=(obj)=>{const a=new Array(20).fill(null); for(const k in obj)a[k]=obj[k]; assert.ok(a.every(v=>v!==null)); return a};
 
 test("同点のときの優先順：判断材料 → 投資期間 → 性格", ()=>{
-  // 判断材料がマイナスなら、他がどうであれテクニカル
-  assert.equal(score(byAxis([1,-1,1,-1]),AXIS_OF).key,"tech");
-  // 判断材料が0なら投資期間
-  assert.equal(score(byAxis([-1,0,1,0]),AXIS_OF).key,"tech");
-  assert.equal(score(byAxis([1,0,-1,0]),AXIS_OF).key,"fund");
-  // 判断材料・投資期間が0なら性格
-  assert.equal(score(byAxis([0,0,1,-1]),AXIS_OF).key,"tech");
-  assert.equal(score(byAxis([0,0,-1,1]),AXIS_OF).key,"fund");
+  // 判断材料がマイナス
+  const t1=build({0:2,1:2,2:1,3:1,4:1, 5:-1,6:-1,7:-1,8:-1,9:-1,12:-1, 10:1,11:1,13:-1,14:-1, 15:1,16:-1,17:1,18:-1,19:1});
+  assert.ok(tie(t1).axis[1]<0); assert.equal(tie(t1).key,"tech");
+  assert.equal(tie(t1.map(v=>-v)).key,"fund");
+  // 判断材料が0 → 投資期間
+  const t2=build({0:-1,1:-1,2:-1,3:-1,4:2, ...AX1_ZERO, 10:1,11:1,13:-1,14:1, 15:1,16:-1,17:-1,18:-1,19:1});
+  assert.equal(tie(t2).axis[1],0); assert.ok(tie(t2).axis[0]<0); assert.equal(tie(t2).key,"tech");
+  assert.equal(tie(t2.map(v=>-v)).key,"fund");
+  // 判断材料・投資期間が0 → 性格
+  const t3=build({0:2,1:-1,2:-1,3:2,4:-2, ...AX1_ZERO, 10:1,11:1,13:-1,14:1, 15:-1,16:-1,17:-1,18:-1,19:1});
+  assert.deepEqual(tie(t3).axis.slice(0,2),[0,0]); assert.ok(tie(t3).axis[3]<0); assert.equal(tie(t3).key,"tech");
+  assert.equal(tie(t3.map(v=>-v)).key,"fund");
 });
 
 test("すべての軸が0なら fund、表示は 49/51", ()=>{
-  // 実際に選べる回答（-2,-1,1,2）だけで、各軸の合計を0にする
-  // ※合計0で 判断材料・投資期間・性格 が0なら、時間の使い方も必ず0になる
-  const r=score(AXIS_OF.map((_,i)=>[2,-1,-1,2,-2][i%5]),AXIS_OF);
-  assert.deepEqual(r.axis,[0,0,0,0]);
+  const z=build({0:2,1:-1,2:-1,3:2,4:-2, ...AX1_ZERO, 10:1,11:-1,13:1,14:-1, 15:-1,16:-1,17:1,18:-1,19:1});
+  const r=tie(z);
+  assert.deepEqual(r.axis.map(Math.abs),[0,0,0,0]);
   assert.equal(r.key,"fund");
   assert.deepEqual([r.pa,r.pb],[49,51]);
 });
 
 test("割合は50%ちょうどにならず、合計は常に100", ()=>{
   // 各問 -2,-1,1,2 のランダム回答で確認
-  let seed=1; const rnd=()=>(seed=(seed*1103515245+12345)%2147483648)/2147483648;
+  const rnd=rng(1);
   for(let n=0;n<2000;n++){
     const a=AXIS_OF.map(()=>[-2,-1,1,2][Math.floor(rnd()*4)]);
     const r=score(a,AXIS_OF);
@@ -171,7 +189,7 @@ test("Q21・Q22に「Bにとても近い」→ りろんかぶお講師・テン
 });
 
 test("講義の並び：一番上は1つだけ、同じ講義は2回出ない、あわせては最大2つ", ()=>{
-  let seed=3; const rnd=()=>(seed=(seed*1103515245+12345)%2147483648)/2147483648;
+  const rnd=rng(3);
   for(let n=0;n<3000;n++){
     const a=AXES22.map(()=>[-2,-1,1,2][Math.floor(rnd()*4)]);
     const c=pick(a);
