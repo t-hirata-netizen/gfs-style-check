@@ -1,0 +1,15 @@
+/* LINE・SNS共有用の画像（1200×630）のもと。tools/make-og.sh で PNG にする */
+*{box-sizing:border-box;margin:0}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{background:#20124D;color:#fff;font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",sans-serif;padding:64px 72px;position:relative}
+.brand{font-family:"Dela Gothic One",sans-serif;font-size:30px;letter-spacing:.08em}
+.brand span{font-family:"Zen Kaku Gothic New",sans-serif;font-weight:700;font-size:22px;opacity:.75;margin-left:14px;letter-spacing:.12em}
+.eyebrow{font-size:26px;font-weight:700;opacity:.8;margin-top:56px;letter-spacing:.14em}
+h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:104px;line-height:1.15;margin-top:10px}
+.pill{display:inline-block;margin-top:22px;padding:10px 26px;border-radius:999px;font-weight:900;font-size:30px}
+.tech .pill{background:#5B8CFF;color:#110C24}.fund .pill{background:#F5A524;color:#110C24}
+.split{position:absolute;left:72px;right:72px;bottom:64px;display:flex;gap:10px;height:14px}
+.split i{flex:1;border-radius:8px;background:#5B8CFF}.split i+i{background:#F5A524}
+.tech .split i+i,.fund .split i:first-child{opacity:.35}
+.cta{position:absolute;right:72px;bottom:100px;font-size:28px;font-weight:700;opacity:.9}
+.t{color:#8FB0FF}.f{color:#FFC45C}

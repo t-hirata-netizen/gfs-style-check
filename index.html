@@ -7,16 +7,22 @@
 <meta property="og:title" content="投資スタイル診断｜テクニカル派？ファンダメンタルズ派？">
 <meta property="og:description" content="22問・約5分。あなたに合う投資スタイルと、次に見る講義がわかります。">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://t-hirata-netizen.github.io/gfs-style-check/">
+<meta property="og:image" content="https://t-hirata-netizen.github.io/gfs-style-check/og/default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <title>投資スタイル診断</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
 <style>
 :root{
-  --bg:#F3F4F9; --surface:#FFFFFF; --ink:#16112E; --body:#3B3F5C; --muted:#6E7191; --line:#DFE1EC;
+  --bg:#F3F4F9; --surface:#FFFFFF; --ink:#16112E; --body:#3B3F5C; --muted:#63667F; --line:#DFE1EC;
   --navy:#20124D; --navy-ink:#FFFFFF;
   --tech:#2563EB; --tech-soft:#E3ECFD; --tech-ink:#1D4ED8;
   --fund:#E08A00; --fund-soft:#FDF0DA; --fund-ink:#A15C00;
+  --on-tech:#FFFFFF; --on-fund:#16112E; --fund-edge:#B86F00; /* 青・オレンジの上に載せる文字色、オレンジの枠線 */
   --focus:#7C5CFF;
   --display:"Dela Gothic One","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
   --text:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif;
@@ -28,6 +34,7 @@
     --navy:#2B1C66; --navy-ink:#FFFFFF;
     --tech:#5B8CFF; --tech-soft:#1B2A55; --tech-ink:#9DB9FF;
     --fund:#F5A524; --fund-soft:#3A2A12; --fund-ink:#FFC766;
+    --on-tech:#110C24; --on-fund:#110C24; --fund-edge:#F5A524;
   }
 }
 :root[data-theme="dark"]{
@@ -36,6 +43,7 @@
   --navy:#2B1C66; --navy-ink:#FFFFFF;
   --tech:#5B8CFF; --tech-soft:#1B2A55; --tech-ink:#9DB9FF;
   --fund:#F5A524; --fund-soft:#3A2A12; --fund-ink:#FFC766;
+  --on-tech:#110C24; --on-fund:#110C24; --fund-edge:#F5A524;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -46,7 +54,10 @@ header.brand{display:flex;align-items:center;justify-content:space-between;paddi
 .logo{font-family:var(--display);color:var(--ink);font-size:15px;letter-spacing:.08em}
 .logo span{color:var(--muted);font-family:var(--text);font-weight:700;font-size:12px;margin-left:8px;letter-spacing:.1em}
 button{font:inherit;cursor:pointer}
-button:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+a:focus-visible{border-radius:4px}
+[tabindex="-1"]:focus{outline:none}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 h1,h2,h3{color:var(--ink);text-wrap:balance;margin:0}
 
 /* ---------- start ---------- */
@@ -77,18 +88,17 @@ h1,h2,h3{color:var(--ink);text-wrap:balance;margin:0}
 .qtitle{font-size:15px;color:var(--muted);margin-top:4px}
 .pair{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px}
 .stmt{border-radius:14px;padding:16px 18px;font-weight:700;color:var(--ink);font-size:17px;line-height:1.6;display:flex;gap:12px;align-items:flex-start}
-.stmt .k{font-family:var(--display);font-size:14px;flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;margin-top:1px}
-.stmt.a{background:var(--tech-soft)}.stmt.a .k{background:var(--tech)}
-.stmt.b{background:var(--fund-soft)}.stmt.b .k{background:var(--fund)}
+.stmt .k{font-family:var(--display);font-size:14px;flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;margin-top:1px}
+.stmt.a{background:var(--tech-soft)}.stmt.a .k{background:var(--tech);color:var(--on-tech)}
+.stmt.b{background:var(--fund-soft)}.stmt.b .k{background:var(--fund);color:var(--on-fund)}
 .scale{margin-top:22px}
 .dots{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.dot{border:2px solid;background:transparent;border-radius:50%;display:grid;place-items:center;transition:transform .12s, background .12s}
+.dot{border:2px solid;background:transparent;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:15px;transition:transform .12s, background .12s}
 .dot:hover{transform:scale(1.07)}
 .dot.s2{width:60px;height:60px}.dot.s1{width:44px;height:44px}
-.dot.ta{border-color:var(--tech)}.dot.tb{border-color:var(--fund)}
-.dot.ta[aria-pressed="true"]{background:var(--tech)}
-.dot.tb[aria-pressed="true"]{background:var(--fund)}
-.dot[aria-pressed="true"]::after{content:"";width:14px;height:14px;border-radius:50%;background:#fff}
+.dot.ta{border-color:var(--tech);color:var(--tech-ink)}.dot.tb{border-color:var(--fund-edge);color:var(--fund-ink)}
+.dot.ta[aria-pressed="true"]{background:var(--tech);color:var(--on-tech)}
+.dot.tb[aria-pressed="true"]{background:var(--fund);border-color:var(--fund);color:var(--on-fund)}
 .labels{display:flex;justify-content:space-between;margin-top:10px;font-size:13px;font-weight:700}
 .labels .la{color:var(--tech-ink)}.labels .lb{color:var(--fund-ink)}
 .hint{text-align:center;font-size:13px;color:var(--muted);margin-top:14px}
@@ -99,9 +109,9 @@ h1,h2,h3{color:var(--ink);text-wrap:balance;margin:0}
 /* ---------- result ---------- */
 .rhead{border-radius:20px;padding:28px 24px;margin-top:8px;color:#fff}
 .rhead.tech{background:linear-gradient(140deg,#1E3FAE,#2563EB)}
-.rhead.fund{background:linear-gradient(140deg,#B8650A,#E08A00)}
+.rhead.fund{background:linear-gradient(140deg,#E08A00,#F5A524);color:#16112E}
 .rhead .eyebrow{font-size:12px;font-weight:700;letter-spacing:.2em;opacity:.85}
-.rhead h1{color:#fff;font-family:var(--display);font-weight:400;font-size:clamp(34px,8vw,50px);line-height:1.25;margin-top:6px}
+.rhead h1{color:inherit;font-family:var(--display);font-weight:400;font-size:clamp(34px,8vw,50px);line-height:1.25;margin-top:6px}
 .rhead .style{font-weight:900;font-size:18px;margin-top:4px}
 .rhead p{margin:12px 0 0;opacity:.95}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-top:14px}
@@ -117,6 +127,8 @@ h1,h2,h3{color:var(--ink);text-wrap:balance;margin:0}
 .track{position:relative;height:10px;background:var(--line);border-radius:6px;margin-top:4px}
 .track::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--muted);opacity:.5}
 .track i{position:absolute;top:0;height:100%;border-radius:6px}
+.ax-note{font-size:13px;margin:6px 0 0;line-height:1.6}
+.ax-note b{color:var(--ink)}
 ul.list{margin:0;padding-left:1.2em}
 ul.list li{margin:5px 0}
 .course{display:grid;gap:10px}
@@ -128,8 +140,8 @@ ul.list li{margin:5px 0}
 .cr.tech .tag{color:var(--tech-ink)}.cr.fund .tag{color:var(--fund-ink)}
 .cr .nm{font-weight:900;color:var(--ink);font-size:16px}
 .cr .ds{font-size:14px;margin-top:2px}
-.cr .go{display:inline-block;margin-top:10px;padding:8px 14px;border-radius:10px;font-weight:900;font-size:14px;text-decoration:none;color:#fff}
-.cr.tech .go{background:var(--tech)}.cr.fund .go{background:var(--fund)}
+.cr .go{display:inline-block;margin-top:10px;padding:8px 14px;border-radius:10px;font-weight:900;font-size:14px;text-decoration:none}
+.cr.tech .go{background:var(--tech);color:var(--on-tech)}.cr.fund .go{background:var(--fund);color:var(--on-fund)}
 .note a.all{color:var(--ink);font-weight:700}
 .cr .go:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 .note{font-size:13px;color:var(--muted);margin-top:14px}
@@ -148,7 +160,7 @@ ul.list li{margin:5px 0}
   <section id="start">
     <div class="hero">
       <div class="eyebrow">INVESTMENT STYLE TEST</div>
-      <h1>あなたは<br><span class="t">テクニカル</span>派？<br><span class="f">ファンダメンタルズ</span>派？</h1>
+      <h1 tabindex="-1">あなたは<br><span class="t">テクニカル</span>派？<br><span class="f">ファンダメンタルズ</span>派？</h1>
       <p>講義を見ても決めきれなかった方へ。22問に答えるだけで、あなたに合う投資スタイルと、次に見る講義がわかります。</p>
       <div class="split" aria-hidden="true"><i></i><i></i></div>
       <div class="meta"><div><b>22</b>問</div><div><b>5</b>分</div><div><b>2</b>タイプ判定</div></div>
@@ -167,21 +179,22 @@ ul.list li{margin:5px 0}
 
   <!-- QUIZ -->
   <section id="quiz" hidden>
-    <div class="progress"><div class="bar"><i id="barFill"></i></div><div class="count" id="count">1 / 22</div></div>
+    <div class="progress"><div class="bar" id="bar" role="progressbar" aria-label="回答した数" aria-valuemin="0" aria-valuemax="22" aria-valuenow="0"><i id="barFill"></i></div><div class="count" id="count">1 / 22</div></div>
     <div class="axis" id="axis"></div>
     <div class="qtitle">あなたに近いのはどっち？</div>
+    <p class="sr-only" id="live" aria-live="polite"></p>
     <div class="pair">
       <div class="stmt a"><span class="k">A</span><span id="textA"></span></div>
       <div class="stmt b"><span class="k">B</span><span id="textB"></span></div>
     </div>
-    <div class="scale" role="group" aria-label="回答">
+    <div class="scale" role="group" aria-label="あなたに近いのはどっち？">
       <div class="dots">
-        <button class="dot s2 ta" data-v="-2" aria-label="Aにとても近い" aria-pressed="false"></button>
-        <button class="dot s1 ta" data-v="-1" aria-label="Aにやや近い" aria-pressed="false"></button>
-        <button class="dot s1 tb" data-v="1" aria-label="Bにやや近い" aria-pressed="false"></button>
-        <button class="dot s2 tb" data-v="2" aria-label="Bにとても近い" aria-pressed="false"></button>
+        <button class="dot s2 ta" data-v="-2" aria-label="Aにとても近い" aria-pressed="false"><span aria-hidden="true">A</span></button>
+        <button class="dot s1 ta" data-v="-1" aria-label="Aにやや近い" aria-pressed="false"><span aria-hidden="true">A</span></button>
+        <button class="dot s1 tb" data-v="1" aria-label="Bにやや近い" aria-pressed="false"><span aria-hidden="true">B</span></button>
+        <button class="dot s2 tb" data-v="2" aria-label="Bにとても近い" aria-pressed="false"><span aria-hidden="true">B</span></button>
       </div>
-      <div class="labels"><span class="la">Aにとても近い</span><span class="lb">Bにとても近い</span></div>
+      <div class="labels" aria-hidden="true"><span class="la">Aにとても近い</span><span class="lb">Bにとても近い</span></div>
       <div class="hint">選ぶと次の質問に進みます</div>
     </div>
     <div class="nav">
@@ -194,7 +207,7 @@ ul.list li{margin:5px 0}
   <section id="result" hidden>
     <div class="rhead" id="rhead">
       <div class="eyebrow">あなたの投資スタイルは</div>
-      <h1 id="rName"></h1>
+      <h1 id="rName" tabindex="-1"></h1>
       <div class="style" id="rStyle"></div>
       <p id="rLead"></p>
     </div>
@@ -228,6 +241,13 @@ ul.list li{margin:5px 0}
       <textarea class="copybox" id="copyText" readonly hidden aria-label="コピー用の結果"></textarea>
     </div>
 
+    <div class="card">
+      <h2>結果をシェアする</h2>
+      <p style="margin:0;font-size:14px">友だちやSNSに、タイプ名と診断のリンクを送れます。回答の中身や割合は送られません。</p>
+      <div class="row"><button class="copy" id="btnShare">結果をシェア</button></div>
+      <p class="note" id="shareNote" role="status"></p>
+    </div>
+
     <p class="note">※この診断は投資スタイルを選ぶための目安です。やってみて合わなければ、途中で変えても大丈夫です。組み合わせて使う方もたくさんいます。<br>※投資には元本割れなどのリスクがあります。</p>
     <div class="row"><button class="ghost" id="btnRetry">もう一度診断する</button></div>
   </section>
@@ -237,10 +257,22 @@ ul.list li{margin:5px 0}
 <script>
 (function(){
 const AXES=[
-  {name:"投資期間",a:"短期で勝負",b:"長期でじっくり"},
-  {name:"判断材料",a:"株価の動き",b:"企業の中身"},
-  {name:"時間の使い方",a:"こまめにチェック",b:"まとめて調べる"},
-  {name:"性格",a:"スピード重視",b:"コツコツ重視"}
+  {name:"投資期間",a:"短期で勝負",b:"長期でじっくり",
+   na:"短い期間で結果を見たいタイプです。数日〜数週間の値動きをとらえる売買と相性がよいです。",
+   nb:"時間をかけて増やしたいタイプです。数年単位で株を持つ投資と相性がよいです。",
+   nm:"短期と長期、どちらにも抵抗がないタイプです。目的に合わせて期間を決められます。"},
+  {name:"判断材料",a:"株価の動き",b:"企業の中身",
+   na:"チャート（株価の動きを表したグラフ）から判断するのが得意です。テクニカル分析の考え方がそのまま生きます。",
+   nb:"決算や事業の中身を調べて判断したいタイプです。ファンダメンタルズ分析（会社の実力を調べる方法）が向いています。",
+   nm:"株価の動きと企業の中身、両方を見たいタイプです。2つを組み合わせる方法も合います。"},
+  {name:"時間の使い方",a:"こまめにチェック",b:"まとめて調べる",
+   na:"こまめに株価を確認できるタイプです。値動きに合わせて、売買のタイミングを探せます。",
+   nb:"まとまった時間にじっくり調べたいタイプです。日中に株価を見られなくても続けやすい方法が合います。",
+   nm:"こまめに見るのも、まとめて調べるのもできるタイプです。"},
+  {name:"性格",a:"スピード重視",b:"コツコツ重視",
+   na:"決めたらすぐ動けるタイプです。損切り（損を小さく抑えるための売り）のルールを先に決めておくと、強みが生きます。",
+   nb:"コツコツ積み上げるタイプです。すぐに結果が出なくても、納得できれば待てることが強みになります。",
+   nm:"素早く動くことも、じっくり待つこともできるタイプです。"}
 ];
 const Q=[
  [0,"数日〜数週間で、結果を出したい","数年かけて、じっくり増やしたい"],
@@ -293,20 +325,29 @@ const TYPES={
 };
 const $=id=>document.getElementById(id);
 const KEY="gfs-style-test-v1";
-let ans=new Array(Q.length).fill(null), cur=0, locked=false;
+let ans=new Array(Q.length).fill(null), cur=0, locked=false, announced=-1, shareKey=null;
 
 function save(){try{localStorage.setItem(KEY,JSON.stringify({ans,cur}))}catch(e){}}
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||"null");if(d&&Array.isArray(d.ans)&&d.ans.length===Q.length)return d}catch(e){}return null}
 function clear(){try{localStorage.removeItem(KEY)}catch(e){}}
 
-function show(id){for(const s of ["start","quiz","result"])$(s).hidden=(s!==id);window.scrollTo(0,0)}
+function show(id){
+  for(const s of ["start","quiz","result"])$(s).hidden=(s!==id);
+  window.scrollTo(0,0);
+  // 画面が切り替わったことを読み上げソフトに伝えるため、見出しにフォーカスを移す
+  const h=id==="start"?document.querySelector("#start h1"):id==="result"?$("rName"):null;
+  if(h)h.focus({preventScroll:true});
+}
 
 function renderQ(){
   const [ax,a,b]=Q[cur];
   $("axis").textContent=ax==null?"あなたの興味（タイプ判定には使いません）":AXES[ax].name;
   $("textA").textContent=a; $("textB").textContent=b;
   $("count").textContent=`${cur+1} / ${Q.length}`;
-  $("barFill").style.width=`${(ans.filter(v=>v!==null).length/Q.length)*100}%`;
+  const done=ans.filter(v=>v!==null).length;
+  $("barFill").style.width=`${done/Q.length*100}%`;
+  $("bar").setAttribute("aria-valuenow",done); $("bar").setAttribute("aria-valuemax",Q.length);
+  if(announced!==cur){announced=cur; $("live").textContent=`質問 ${cur+1} / ${Q.length}（${$("axis").textContent}）。A：${a}。B：${b}`}
   document.querySelectorAll(".dot").forEach(d=>d.setAttribute("aria-pressed",String(ans[cur]===Number(d.dataset.v))));
   $("btnBack").disabled=cur===0;
 }
@@ -336,10 +377,13 @@ function finish(){
     const w=Math.abs(v)/r.axisMax[i]*50;
     const left=v<0?50-w:50;
     const color=v<0?"var(--tech)":"var(--fund)";
+    const L=GFSScore.axisLean(v,r.axisMax[i]);
+    const head=L.side==="mid"?"どちらとも言えない":`${L.side==="a"?A.a:A.b}寄り（${L.strong?"はっきり":"やや"}）`;
     const el=document.createElement("div");
     el.innerHTML=`<div class="ax-name">${A.name}</div>
-      <div class="ax-top"><span class="a">${A.a}</span><span class="b">${A.b}</span></div>
-      <div class="track"><i style="left:${left}%;width:${Math.max(w,1)}%;background:${color}"></i></div>`;
+      <div class="ax-top" aria-hidden="true"><span class="a">${A.a}</span><span class="b">${A.b}</span></div>
+      <div class="track" aria-hidden="true"><i style="left:${left}%;width:${Math.max(w,1)}%;background:${color}"></i></div>
+      <p class="ax-note"><b>${head}：</b>${L.side==="a"?A.na:L.side==="b"?A.nb:A.nm}</p>`;
     axes.appendChild(el);
   });
   $("rGood").innerHTML=T.good.map(x=>`<li>${x}</li>`).join("");
@@ -352,6 +396,7 @@ function finish(){
     ...(courses.length>1?[`あわせて：${courses.slice(1).map(c=>c.nm).join("、")}`]:[]),`次に見る講義はこれで合っていますか？`];
   $("copyText").value=lines.join("\n"); $("copyText").hidden=true;
   $("btnCopy").textContent="結果をコピー";
+  shareKey=r.key; $("shareNote").textContent="";
   clear(); show("result");
 }
 
@@ -369,6 +414,14 @@ $("btnCopy").onclick=async()=>{
   const t=$("copyText").value;
   try{await navigator.clipboard.writeText(t);$("btnCopy").textContent="コピーしました"}
   catch(e){$("copyText").hidden=false;$("copyText").focus();$("copyText").select();$("btnCopy").textContent="下の文を選択してコピーしてください"}
+};
+$("btnShare").onclick=async()=>{
+  const T=TYPES[shareKey], url=new URL(shareKey+".html",location.href).href;
+  const text=`GFS 投資スタイル診断の結果は「${T.name}（${T.style}）」でした。あなたはどっち？`;
+  if(navigator.share){try{await navigator.share({title:"投資スタイル診断",text,url})}catch(e){} return}
+  // シェア機能がないブラウザ（主にパソコン）は、LINE の送信画面を開く
+  window.open("https://social-plugins.line.me/lineit/share?url="+encodeURIComponent(url),"_blank","noopener");
+  $("shareNote").textContent="LINE の送信画面を新しいタブで開きました。";
 };
 function refreshResume(){const d=load();$("btnResume").hidden=!(d&&d.ans.some(v=>v!==null))}
 refreshResume();

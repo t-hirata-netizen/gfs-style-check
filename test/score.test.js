@@ -3,7 +3,7 @@ const test=require("node:test");
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
-const {score,pickCourses}=require("../score.js");
+const {score,pickCourses,axisLean}=require("../score.js");
 
 // 今の質問の並び（タイプ判定に使う20問）。Q13（番号12）は判断材料の軸
 const AXIS_OF=[0,0,0,0,0, 1,1,1,1,1, 2,2,1,2,2, 3,3,3,3,3];
@@ -219,4 +219,63 @@ test("score.js が使う講義IDが、すべて index.html の COURSES にある
   const used=new Set([...src.matchAll(/id:"(\w+)"/g)].map(m=>m[1]));
   assert.equal(defined.size,10);
   for(const id of used)assert.ok(defined.has(id),id);
+});
+
+test("軸の寄り具合：2割未満は「どちらとも」、6割以上は「はっきり」", ()=>{
+  assert.deepEqual(axisLean(0,10),{side:"mid",strong:false});
+  assert.deepEqual(axisLean(1.9,10),{side:"mid",strong:false});
+  assert.deepEqual(axisLean(-2,10),{side:"a",strong:false});
+  assert.deepEqual(axisLean(5,10),{side:"b",strong:false});
+  assert.deepEqual(axisLean(-6,10),{side:"a",strong:true});
+  assert.deepEqual(axisLean(18,18),{side:"b",strong:true});
+});
+
+// ---- シェア用のページと画像 ----
+const BASE="https://t-hirata-netizen.github.io/gfs-style-check/";
+const pngSize=f=>{const b=fs.readFileSync(f); assert.equal(b.toString("ascii",1,4),"PNG"); return [b.readUInt32BE(16),b.readUInt32BE(20)]};
+
+test("共有用の画像（og/*.png）は3枚とも 1200×630", ()=>{
+  for(const n of ["default","tech","fund"])assert.deepEqual(pngSize(path.join(__dirname,"..","og",n+".png")),[1200,630]);
+});
+
+test("index.html・tech.html・fund.html の og:image は公開URLの画像を指している", ()=>{
+  const cases={"index.html":"og/default.png","tech.html":"og/tech.png","fund.html":"og/fund.png"};
+  for(const [page,img] of Object.entries(cases)){
+    const h=fs.readFileSync(path.join(__dirname,"..",page),"utf8");
+    assert.ok(h.includes(`<meta property="og:image" content="${BASE}${img}">`),page);
+    assert.ok(h.includes('<meta name="twitter:card" content="summary_large_image">'),page);
+    assert.doesNotMatch(h,/lmclid/);
+  }
+});
+
+test("シェア用ページの型名が、index.html の TYPES と一致している", ()=>{
+  for(const [k,name] of [["tech","チャートハンター型"],["fund","企業ウォッチャー型"]]){
+    assert.ok(HTML.includes(`name:"${name}"`));
+    const h=fs.readFileSync(path.join(__dirname,"..",k+".html"),"utf8");
+    assert.ok(h.includes(`<h1>${name}</h1>`),k);
+  }
+});
+
+// ---- 色のコントラスト（WCAG：文字 4.5 以上、線や図形 3 以上） ----
+const tokens=css=>Object.fromEntries([...css.matchAll(/--([\w-]+):\s*(#[0-9A-Fa-f]{6})/g)].map(m=>[m[1],m[2]]));
+const lum=h=>{const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=0.03928?v/12.92:((v+0.055)/1.055)**2.4); return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]};
+const contrast=(a,b)=>{const [x,y]=[lum(a),lum(b)].sort((p,q)=>q-p); return (x+0.05)/(y+0.05)};
+
+test("色のコントラスト：ライト・ダークの両方で基準を満たす", ()=>{
+  const light=tokens(HTML.slice(HTML.indexOf(":root{"),HTML.indexOf("@media (prefers-color-scheme: dark)")));
+  const darkCss=HTML.slice(HTML.indexOf(':root[data-theme="dark"]{'));
+  const dark={...light,...tokens(darkCss.slice(0,darkCss.indexOf("}")))};
+  const pairs=[["body","surface",4.5],["muted","bg",4.5],["muted","surface",4.5],["ink","bg",4.5],
+    ["on-tech","tech",4.5],["on-fund","fund",4.5],["tech-ink","tech-soft",4.5],["fund-ink","fund-soft",4.5],
+    ["tech-ink","surface",4.5],["fund-ink","surface",4.5],["tech","bg",3],["fund-edge","bg",3]];
+  for(const [name,t] of [["ライト",light],["ダーク",dark]]){
+    for(const [fg,bg,need] of pairs){
+      assert.ok(t[fg]&&t[bg],`${name}: --${fg} か --${bg} が未定義`);
+      const c=contrast(t[fg],t[bg]);
+      assert.ok(c>=need,`${name}: --${fg} / --${bg} = ${c.toFixed(2)}（基準 ${need}）`);
+    }
+  }
+  // 結果ヘッダー（固定色）
+  assert.ok(contrast("#FFFFFF","#2563EB")>=4.5);                              // テクニカル：白文字
+  assert.ok(contrast("#16112E","#E08A00")>=4.5 && contrast("#16112E","#F5A524")>=4.5); // ファンダ：濃い文字
 });

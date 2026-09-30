@@ -13,6 +13,8 @@ GFSの講義「あなたの株式投資はテクニカル？ファンダメン�
 - 講義の一覧（講師名・URL）：`const COURSES={`
 - 4つの軸の名前：`const AXES=[`
 - 判定ロジック・どの講義を出すか：`score.js`
+- 軸ごとの解説文：`const AXES=[` の `na` / `nb` / `nm`
+- シェア用のページと画像：`tech.html`・`fund.html`・`og/`（画像は `sh tools/make-og.sh` で作り直す）
 
 ## テスト
 判定ロジックの単体テスト（Node 18 以上）：`npm test`

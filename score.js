@@ -63,6 +63,14 @@
     return out;
   }
 
-  const api={score,pickCourses};
+  // 軸ごとの寄り具合（結果画面の解説に使う）。v: 軸の合計、max: その軸の最大値
+  // 最大値の2割未満は「どちらとも」（mid）、6割以上は「はっきり」（strong）
+  function axisLean(v, max){
+    const x=max?v/max:0;
+    if(Math.abs(x)<0.2)return {side:"mid",strong:false};
+    return {side:x<0?"a":"b",strong:Math.abs(x)>=0.6};
+  }
+
+  const api={score,pickCourses,axisLean};
   if(typeof module==="object"&&module.exports)module.exports=api; else root.GFSScore=api;
 })(typeof globalThis!=="undefined"?globalThis:this);
