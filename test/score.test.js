@@ -118,3 +118,13 @@ test("元の講義データは書き換えない", ()=>{
   orderCourses("fund",a,COURSES);
   assert.equal(JSON.stringify(COURSES),before);
 });
+
+test("講義のURLは gfs.tokyo のページで、個人識別用のパラメータを含まない", ()=>{
+  const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
+  const urls=[...html.matchAll(/url:"([^"]*)"/g)].map(m=>m[1]);
+  assert.equal(urls.length,4);
+  for(const u of urls){
+    assert.match(u,/^https:\/\/gfs\.tokyo\//);
+    assert.doesNotMatch(u,/[?&#]/); // lmclid などを入れない（このリポジトリは Public）
+  }
+});
