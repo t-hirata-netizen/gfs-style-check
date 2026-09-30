@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="20問に答えるだけで、テクニカル派かファンダメンタルズ派かがわかる投資スタイル診断">
+<meta name="description" content="22問に答えるだけで、テクニカル派かファンダメンタルズ派かがわかる投資スタイル診断">
 <meta property="og:title" content="投資スタイル診断｜テクニカル派？ファンダメンタルズ派？">
-<meta property="og:description" content="20問・約5分。あなたに合う投資スタイルと、次に見る講義がわかります。">
+<meta property="og:description" content="22問・約5分。あなたに合う投資スタイルと、次に見る講義がわかります。">
 <meta property="og:type" content="website">
 <title>投資スタイル診断</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -130,6 +130,7 @@ ul.list li{margin:5px 0}
 .cr .ds{font-size:14px;margin-top:2px}
 .cr .go{display:inline-block;margin-top:10px;padding:8px 14px;border-radius:10px;font-weight:900;font-size:14px;text-decoration:none;color:#fff}
 .cr.tech .go{background:var(--tech)}.cr.fund .go{background:var(--fund)}
+.note a.all{color:var(--ink);font-weight:700}
 .cr .go:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 .note{font-size:13px;color:var(--muted);margin-top:14px}
 .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
@@ -148,9 +149,9 @@ ul.list li{margin:5px 0}
     <div class="hero">
       <div class="eyebrow">INVESTMENT STYLE TEST</div>
       <h1>あなたは<br><span class="t">テクニカル</span>派？<br><span class="f">ファンダメンタルズ</span>派？</h1>
-      <p>講義を見ても決めきれなかった方へ。20問に答えるだけで、あなたに合う投資スタイルと、次に見る講義がわかります。</p>
+      <p>講義を見ても決めきれなかった方へ。22問に答えるだけで、あなたに合う投資スタイルと、次に見る講義がわかります。</p>
       <div class="split" aria-hidden="true"><i></i><i></i></div>
-      <div class="meta"><div><b>20</b>問</div><div><b>5</b>分</div><div><b>2</b>タイプ判定</div></div>
+      <div class="meta"><div><b>22</b>問</div><div><b>5</b>分</div><div><b>2</b>タイプ判定</div></div>
     </div>
     <div class="how">
       <h2>答え方</h2>
@@ -166,7 +167,7 @@ ul.list li{margin:5px 0}
 
   <!-- QUIZ -->
   <section id="quiz" hidden>
-    <div class="progress"><div class="bar"><i id="barFill"></i></div><div class="count" id="count">1 / 20</div></div>
+    <div class="progress"><div class="bar"><i id="barFill"></i></div><div class="count" id="count">1 / 22</div></div>
     <div class="axis" id="axis"></div>
     <div class="qtitle">あなたに近いのはどっち？</div>
     <div class="pair">
@@ -216,6 +217,7 @@ ul.list li{margin:5px 0}
     <div class="card">
       <h2>次に見る講義</h2>
       <div class="course" id="rCourse"></div>
+      <p class="note">ほかの実践コースも見たいときは <a class="all" href="https://gfs.tokyo/inv-methods/" target="_blank" rel="noopener">実践コース一覧（全9コース）→</a>。各コースの特徴を解説した動画もあります。</p>
       <p class="note">迷ったら、専任コンサルに「診断で〇〇型だった。次はどの講義？」と聞いてください。</p>
     </div>
 
@@ -260,26 +262,34 @@ const Q=[
  [3,"早く結果を知りたいタイプ","結果が出るまで、気長に待てるタイプ"],
  [3,"損をしても、すぐ切り替えて次に行ける","損をしても、理由に納得できれば持ち続けられる"],
  [3,"新しいアプリや流行りものは、すぐ試したい","評判や実績を確かめてから試したい"],
- [3,"必修講義では、テクニカルの方が面白そうだと感じた","必修講義では、ファンダメンタルズの方が面白そうだと感じた"]
+ [3,"必修講義では、テクニカルの方が面白そうだと感じた","必修講義では、ファンダメンタルズの方が面白そうだと感じた"],
+ // 以下はタイプ判定に使わない質問（軸 null）。講義の案内だけに使う
+ [null,"日本の会社の株を中心に投資したい","アメリカの会社の株でも成果を出したい"],
+ [null,"上場して長い、実績のある会社に投資したい","上場して間もない会社から、大きく伸びる株を探したい"]
 ];
-// 講義の追加：courses に {cls, tag, nm, ds, url} を1行足す。url を入れると「講義を見る」ボタンが出る
+// 講義の一覧。どの講義を出すかは score.js の pickCourses() が決める
+// cat は色分け（tech=青、fund=オレンジ）。url を入れると「講義を見る」ボタンが出る
+const COURSES={
+ endo:      {cat:"tech",nm:"実践コース：遠藤講師",url:"https://gfs.tokyo/inv-methods/course/technical/endo.php",ds:"証券ディーラー歴15年。脱・なんとなく投資！テクニカル分析コース"},
+ apollo:    {cat:"tech",nm:"実践コース：アポロ講師",url:"https://gfs.tokyo/inv-methods/course/technical/apollo.php",ds:"国際認定アナリスト直伝。複数視点で相場を読み解く多角的分析コース"},
+ kenmo:     {cat:"tech",nm:"実践コース：Kenmo講師",url:"https://gfs.tokyo/inv-methods/course/technical/kenmo.php",ds:"トレンドの初動を掴む、新高値ブレイク投資コース"},
+ lectures:  {cat:"tech",nm:"講義一覧：株式投資 › テクニカル分析編",url:"https://gfs.tokyo/search/lecture/",ds:"講義一覧の「株式投資」タブにあります。トレンド・移動平均線・RSI・MACDなど、指標ごとの講義を選んで見られます"},
+ ichikawa:  {cat:"fund",nm:"実践コース：市川校長",url:"https://gfs.tokyo/inv-methods/course/fundamentals/ichikawa.php",ds:"GFS校長が直伝！決算・チャートで学ぶバランス型投資コース"},
+ hemu:      {cat:"fund",nm:"実践コース：ヘム講師",url:"https://gfs.tokyo/inv-methods/course/fundamentals/hemu.php",ds:"暴落はチャンス！ヘム式バリュー投資コース"},
+ takezou:   {cat:"fund",nm:"実践コース：たけぞう講師",url:"https://gfs.tokyo/inv-methods/course/fundamentals/takezou.php",ds:"トレンドの波を捉えて稼ぐ、テーマ株投資コース"},
+ ricky:     {cat:"fund",nm:"実践コース：リッキー講師",url:"https://gfs.tokyo/inv-methods/course/fundamentals/ricky.php",ds:"売らずに育てる資産形成、配当戦略実践コース"},
+ rironkabuo:{cat:"fund",nm:"実践コース：りろんかぶお講師",url:"https://gfs.tokyo/inv-methods/course/fundamentals/RironKabuo.php",ds:"AI時代の成長戦略を学ぶ、米国株投資コース"},
+ tenbagger: {cat:"fund",nm:"実践コース：テンバガー投資家X",url:"https://gfs.tokyo/inv-methods/course/fundamentals/tenbagger-x.php",ds:"10倍株を掴む、IPOセカンダリー投資コース"}
+};
 const TYPES={
  tech:{name:"チャートハンター型",style:"テクニカル派",
   lead:"株価の動きから「今が買い時か」を読むのが向いています。短期〜中期で、チャートを使って売買のタイミングを探すスタイルです。",
   good:["値動きの変化にすばやく気づける","ルールを決めて、スパッと判断できる","結果がすぐ見えるので、経験を積むスピードが速い"],
-  care:["買う前に「どこまで下がったら売るか（損切り）」を決めておく","売買の回数が増えすぎないように、自分のルールを持つ","最初は100円株など少額で練習する"],
-  courses:[
-   {cls:"tech main",tag:"まずはここから",nm:"実践コース：遠藤講師",url:"https://gfs.tokyo/inv-methods/course/technical/endo.php",ds:"証券ディーラー歴15年。脱・なんとなく投資！テクニカル分析コース"},
-   {cls:"tech",tag:"あわせて",nm:"講義一覧：株式投資 › テクニカル分析編",url:"https://gfs.tokyo/search/lecture/",ds:"講義一覧の「株式投資」タブにあります。トレンド・移動平均線・RSI・MACDなど、指標ごとの講義を選んで見られます"}
-  ]},
+  care:["買う前に「どこまで下がったら売るか（損切り）」を決めておく","売買の回数が増えすぎないように、自分のルールを持つ","最初は100円株など少額で練習する"]},
  fund:{name:"企業ウォッチャー型",style:"ファンダメンタルズ派",
   lead:"企業の中身を見て、じっくり育てるのが向いています。業績や配当を見て、長期で株を持つスタイルです。",
   good:["納得してから買うので、値動きに振り回されにくい","日中に時間がなくても続けやすい","配当や株主優待という楽しみも持てる"],
-  care:["成果が出るまで時間がかかることを、最初から知っておく","業績が悪くなったら、持ち続けるか見直す","最初は100円株など少額で練習する"],
-  courses:[
-   {cls:"fund main",tag:"まずはここから",nm:"実践コース：市川校長",url:"https://gfs.tokyo/inv-methods/course/fundamentals/ichikawa.php",ds:"GFS校長が直伝！決算・チャートで学ぶバランス型投資コース"},
-   {cls:"fund",tag:"配当・優待を狙うなら",nm:"リッキー講師",url:"https://gfs.tokyo/inv-methods/course/fundamentals/ricky.php",ds:"売らずに育てる資産形成、配当戦略実践コース"}
-  ]}
+  care:["成果が出るまで時間がかかることを、最初から知っておく","業績が悪くなったら、持ち続けるか見直す","最初は100円株など少額で練習する"]}
 };
 const $=id=>document.getElementById(id);
 const KEY="gfs-style-test-v1";
@@ -293,7 +303,7 @@ function show(id){for(const s of ["start","quiz","result"])$(s).hidden=(s!==id);
 
 function renderQ(){
   const [ax,a,b]=Q[cur];
-  $("axis").textContent=`${AXES[ax].name}`;
+  $("axis").textContent=ax==null?"あなたの興味（タイプ判定には使いません）":AXES[ax].name;
   $("textA").textContent=a; $("textB").textContent=b;
   $("count").textContent=`${cur+1} / ${Q.length}`;
   $("barFill").style.width=`${(ans.filter(v=>v!==null).length/Q.length)*100}%`;
@@ -334,11 +344,12 @@ function finish(){
   });
   $("rGood").innerHTML=T.good.map(x=>`<li>${x}</li>`).join("");
   $("rCare").innerHTML=T.care.map(x=>`<li>${x}</li>`).join("");
-  const courses=GFSScore.orderCourses(r.key,ans,T.courses);
+  const courses=GFSScore.pickCourses(r,ans).map(p=>({...COURSES[p.id],tag:p.tag,cls:COURSES[p.id].cat+(p.main?" main":"")}));
   $("rCourse").innerHTML=courses.map(c=>`<div class="cr ${c.cls}"><div class="tag">${c.tag}</div><div class="nm">${c.nm}</div><div class="ds">${c.ds}</div>${c.url?`<a class="go" href="${c.url}" target="_blank" rel="noopener">講義を見る →</a>`:""}</div>`).join("");
   const lines=[`【GFS 投資スタイル診断の結果】`,`タイプ：${T.name}（${T.style}）`,`テクニカル ${r.pa}% ／ ファンダメンタルズ ${r.pb}%`,
     ...AXES.map((A,i)=>`・${A.name}：${r.axis[i]<0?A.a:r.axis[i]>0?A.b:"どちらでもない"}`),
-    `次に見る講義：${courses[0].nm}`,`次に見る講義はこれで合っていますか？`];
+    `次に見る講義：${courses[0].nm}`,
+    ...(courses.length>1?[`あわせて：${courses.slice(1).map(c=>c.nm).join("、")}`]:[]),`次に見る講義はこれで合っていますか？`];
   $("copyText").value=lines.join("\n"); $("copyText").hidden=true;
   $("btnCopy").textContent="結果をコピー";
   clear(); show("result");
