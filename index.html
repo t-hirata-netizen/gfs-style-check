@@ -231,6 +231,7 @@ ul.list li{margin:5px 0}
   </section>
 </div>
 
+<script src="score.js"></script>
 <script>
 (function(){
 const AXES=[
@@ -313,24 +314,8 @@ function pick(v){
   },260);
 }
 
-function score(){
-  const axis=[0,0,0,0];
-  ans.forEach((v,i)=>{axis[Q[i][0]]+=v});
-  let total=axis.reduce((s,x)=>s+x,0);
-  let key;
-  if(total<0)key="tech"; else if(total>0)key="fund";
-  else{ // 同点のときは「判断材料」→「投資期間」の順で決める
-    const t=axis[1]||axis[0]||axis[3]||axis[2];
-    key=t<0?"tech":"fund";
-  }
-  const max=2*Q.length;
-  let pb=Math.round(((total+max)/(2*max))*100);
-  if(pb===50)pb=key==="fund"?51:49;
-  return {key,axis,pa:100-pb,pb};
-}
-
 function finish(){
-  const r=score(), T=TYPES[r.key];
+  const r=GFSScore.score(ans,Q.map(q=>q[0])), T=TYPES[r.key];
   $("rhead").className="rhead "+r.key;
   $("rName").textContent=T.name; $("rStyle").textContent=T.style; $("rLead").textContent=T.lead;
   $("rA").style.width=r.pa+"%"; $("rB").style.width=r.pb+"%";
@@ -349,10 +334,7 @@ function finish(){
   });
   $("rGood").innerHTML=T.good.map(x=>`<li>${x}</li>`).join("");
   $("rCare").innerHTML=T.care.map(x=>`<li>${x}</li>`).join("");
-  let courses=T.courses.slice();
-  if(r.key==="fund" && ans[4]===2){ // 配当・優待への関心が強い
-    courses=[{...courses[1],cls:"fund main",tag:"配当・優待への関心が強いあなたに"},{...courses[0],cls:"fund",tag:"あわせて"}];
-  }
+  const courses=GFSScore.orderCourses(r.key,ans,T.courses);
   $("rCourse").innerHTML=courses.map(c=>`<div class="cr ${c.cls}"><div class="tag">${c.tag}</div><div class="nm">${c.nm}</div><div class="ds">${c.ds}</div>${c.url?`<a class="go" href="${c.url}" target="_blank" rel="noopener">講義を見る →</a>`:""}</div>`).join("");
   const lines=[`【GFS 投資スタイル診断の結果】`,`タイプ：${T.name}（${T.style}）`,`テクニカル ${r.pa}% ／ ファンダメンタルズ ${r.pb}%`,
     ...AXES.map((A,i)=>`・${A.name}：${r.axis[i]<0?A.a:r.axis[i]>0?A.b:"どちらでもない"}`),
