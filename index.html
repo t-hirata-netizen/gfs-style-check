@@ -284,7 +284,7 @@ const Q=[
  [1,"会社の中身より、今の株価の動きが気になる","株価より、その会社が何をしているかが気になる"],
  [1,"決まったルールやパターンに当てはめて判断したい","自分で調べて、納得してから判断したい"],
  [1,"「今みんなが買っている株」が気になる","「これから伸びそうな業界」が気になる"],
- [1,"数字は「上がった・下がった」の変化を追うのが好き","数字は「利益・売上」の中身を比べるのが好き"],
+ [1,"数字は「上がった・下がった」の変化を追うのが好き","数字は企業の「利益・売上」の中身を比べるのが好き"],
  [2,"平日の日中も、スマホで株価を見られる","平日の日中は、ほとんど株価を見られない"],
  [2,"毎日少しずつ、値動きをチェックしたい","月に数回、まとめて調べる方が合っている"],
  [1,"決算書を読むのは、正直めんどう","決算書や会社の資料を、読んでみたい"],
@@ -325,7 +325,7 @@ const TYPES={
 };
 // 匿名の集計（Googleスプレッドシートの Apps Script の受け取り口）。空なら送らない。設定方法は CLAUDE.md
 const COLLECT_URL="https://script.google.com/macros/s/AKfycbxYExdO0AMq_XbFkJtRoZJL0q13Q4AcO5B_XCtUEnr3om1uIyQ3r0sGx0cD4do2RCXObQ/exec";
-const APP_VERSION="2026-10-01"; // 質問・重み・判定を変えたら日付を更新する（集計で前後を見分けるため）
+const APP_VERSION="2026-10-01b"; // 質問・重み・判定を変えたら日付を更新する（集計で前後を見分けるため）
 const $=id=>document.getElementById(id);
 const KEY="gfs-style-test-v1";
 let ans=new Array(Q.length).fill(null), cur=0, locked=false, announced=-1, shareKey=null;
