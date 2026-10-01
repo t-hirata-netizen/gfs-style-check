@@ -15,7 +15,8 @@ GFSの講義「あなたの株式投資はテクニカル？ファンダメン�
 - 4つの軸の名前：`const AXES=[`
 - 判定ロジック・どの講義を出すか：`score.js`
 - 軸ごとの解説文：`const AXES=[` の `na` / `nb` / `nm`
-- シェア用のページと画像：`tech.html`・`fund.html`・`og/`（画像は `sh tools/make-og.sh` で作り直す）
+- LINE などで URL を送ったときの画像：`og/default.png`（`sh tools/make-og.sh` で作り直す）
+- GFS 生徒向けのため、シェア機能は置かず、検索結果にも出さない（`noindex`）
 
 ## テスト
 判定ロジックの単体テスト（Node 18 以上）：`npm test`

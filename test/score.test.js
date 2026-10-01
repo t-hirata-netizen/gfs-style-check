@@ -231,30 +231,22 @@ test("軸の寄り具合：2割未満は「どちらとも」、6割以上は「
   assert.deepEqual(axisLean(18,18),{side:"b",strong:true});
 });
 
-// ---- シェア用のページと画像 ----
+// ---- LINE などで URL を送ったときの画像 ----
 const BASE="https://t-hirata-netizen.github.io/gfs-style-check/";
 const pngSize=f=>{const b=fs.readFileSync(f); assert.equal(b.toString("ascii",1,4),"PNG"); return [b.readUInt32BE(16),b.readUInt32BE(20)]};
 
-test("共有用の画像（og/*.png）は3枚とも 1200×630", ()=>{
-  for(const n of ["default","tech","fund"])assert.deepEqual(pngSize(path.join(__dirname,"..","og",n+".png")),[1200,630]);
+test("LINE などで URL を送ったときの画像（og/default.png）は 1200×630", ()=>{
+  assert.deepEqual(pngSize(path.join(__dirname,"..","og","default.png")),[1200,630]);
 });
 
-test("index.html・tech.html・fund.html の og:image は公開URLの画像を指している", ()=>{
-  const cases={"index.html":"og/default.png","tech.html":"og/tech.png","fund.html":"og/fund.png"};
-  for(const [page,img] of Object.entries(cases)){
-    const h=fs.readFileSync(path.join(__dirname,"..",page),"utf8");
-    assert.ok(h.includes(`<meta property="og:image" content="${BASE}${img}">`),page);
-    assert.ok(h.includes('<meta name="twitter:card" content="summary_large_image">'),page);
-    assert.doesNotMatch(h,/lmclid/);
-  }
+test("index.html の og:image は公開URLの画像を指している", ()=>{
+  assert.ok(HTML.includes(`<meta property="og:image" content="${BASE}og/default.png">`));
 });
 
-test("シェア用ページの型名が、index.html の TYPES と一致している", ()=>{
-  for(const [k,name] of [["tech","チャートハンター型"],["fund","企業ウォッチャー型"]]){
-    assert.ok(HTML.includes(`name:"${name}"`));
-    const h=fs.readFileSync(path.join(__dirname,"..",k+".html"),"utf8");
-    assert.ok(h.includes(`<h1>${name}</h1>`),k);
-  }
+test("結果をシェアする機能は置かない（GFS生徒以外に広がらないように）", ()=>{
+  assert.doesNotMatch(HTML,/btnShare|navigator\.share|lineit\/share/);
+  for(const f of ["tech.html","fund.html"])assert.ok(!fs.existsSync(path.join(__dirname,"..",f)),f);
+  assert.ok(HTML.includes('<meta name="robots" content="noindex, nofollow">'));
 });
 
 // ---- 色のコントラスト（WCAG：文字 4.5 以上、線や図形 3 以上） ----
@@ -326,8 +318,5 @@ test("Apps Script は形の崩れたデータを記録しない", ()=>{
 });
 
 test("画面に「送信しません」など、事実と違う説明が残っていない", ()=>{
-  for(const page of ["index.html","tech.html","fund.html"]){
-    const h=fs.readFileSync(path.join(__dirname,"..",page),"utf8");
-    assert.doesNotMatch(h,/送信しません|送信されません/,page);
-  }
+  assert.doesNotMatch(HTML,/送信しません|送信されません/);
 });

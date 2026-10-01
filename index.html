@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow"><!-- GFS 生徒向けのため、検索結果に出さない -->
 <meta name="description" content="22問に答えるだけで、テクニカル派かファンダメンタルズ派かがわかる投資スタイル診断">
 <meta property="og:title" content="投資スタイル診断｜テクニカル派？ファンダメンタルズ派？">
 <meta property="og:description" content="22問・約5分。あなたに合う投資スタイルと、次に見る講義がわかります。">
@@ -241,13 +242,6 @@ ul.list li{margin:5px 0}
       <textarea class="copybox" id="copyText" readonly hidden aria-label="コピー用の結果"></textarea>
     </div>
 
-    <div class="card">
-      <h2>結果をシェアする</h2>
-      <p style="margin:0;font-size:14px">友だちやSNSに、タイプ名と診断のリンクを送れます。回答の中身や割合は送られません。</p>
-      <div class="row"><button class="copy" id="btnShare">結果をシェア</button></div>
-      <p class="note" id="shareNote" role="status"></p>
-    </div>
-
     <p class="note">※この診断は投資スタイルを選ぶための目安です。やってみて合わなければ、途中で変えても大丈夫です。組み合わせて使う方もたくさんいます。<br>※投資には元本割れなどのリスクがあります。</p>
     <div class="row"><button class="ghost" id="btnRetry">もう一度診断する</button></div>
   </section>
@@ -328,7 +322,7 @@ const COLLECT_URL="https://script.google.com/macros/s/AKfycbxYExdO0AMq_XbFkJtRoZ
 const APP_VERSION="2026-10-01"; // 質問の趣旨・重み・判定を変えたら日付を更新する（集計で前後を見分けるため）。言い回しだけの修正では変えない
 const $=id=>document.getElementById(id);
 const KEY="gfs-style-test-v1";
-let ans=new Array(Q.length).fill(null), cur=0, locked=false, announced=-1, shareKey=null;
+let ans=new Array(Q.length).fill(null), cur=0, locked=false, announced=-1;
 
 function save(){try{localStorage.setItem(KEY,JSON.stringify({ans,cur}))}catch(e){}}
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||"null");if(d&&Array.isArray(d.ans)&&d.ans.length===Q.length)return d}catch(e){}return null}
@@ -399,7 +393,6 @@ function finish(){
     ...(courses.length>1?[`あわせて：${courses.slice(1).map(c=>c.nm).join("、")}`]:[]),`次に見る講義はこれで合っていますか？`];
   $("copyText").value=lines.join("\n"); $("copyText").hidden=true;
   $("btnCopy").textContent="結果をコピー";
-  shareKey=r.key; $("shareNote").textContent="";
   collect(GFSScore.buildRecord(r,ans,APP_VERSION));
   clear(); show("result");
 }
@@ -427,14 +420,6 @@ function collect(rec){
       headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(rec)}).catch(()=>{});
   }catch(e){}
 }
-$("btnShare").onclick=async()=>{
-  const T=TYPES[shareKey], url=new URL(shareKey+".html",location.href).href;
-  const text=`GFS 投資スタイル診断の結果は「${T.name}（${T.style}）」でした。あなたはどっち？`;
-  if(navigator.share){try{await navigator.share({title:"投資スタイル診断",text,url})}catch(e){} return}
-  // シェア機能がないブラウザ（主にパソコン）は、LINE の送信画面を開く
-  window.open("https://social-plugins.line.me/lineit/share?url="+encodeURIComponent(url),"_blank","noopener");
-  $("shareNote").textContent="LINE の送信画面を新しいタブで開きました。";
-};
 function refreshResume(){const d=load();$("btnResume").hidden=!(d&&d.ans.some(v=>v!==null))}
 refreshResume();
 })();
