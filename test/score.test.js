@@ -3,7 +3,8 @@ const test=require("node:test");
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
-const {score,pickCourses,axisLean}=require("../score.js");
+const {score,pickCourses,axisLean,buildRecord,collectAllowed}=require("../score.js");
+const vm=require("node:vm");
 
 // 今の質問の並び（タイプ判定に使う20問）。Q13（番号12）は判断材料の軸
 const AXIS_OF=[0,0,0,0,0, 1,1,1,1,1, 2,2,1,2,2, 3,3,3,3,3];
@@ -278,4 +279,55 @@ test("色のコントラスト：ライト・ダークの両方で基準を満�
   // 結果ヘッダー（固定色）
   assert.ok(contrast("#FFFFFF","#2563EB")>=4.5);                              // テクニカル：白文字
   assert.ok(contrast("#16112E","#E08A00")>=4.5 && contrast("#16112E","#F5A524")>=4.5); // ファンダ：濃い文字
+});
+
+// ---- 匿名の集計 ----
+const GS=fs.readFileSync(path.join(__dirname,"..","tools","collect.gs"),"utf8");
+const gs=(()=>{const ctx={}; vm.createContext(ctx); vm.runInContext(GS+";this.isValid=isValid;this.N=N;",ctx); return ctx})();
+
+test("集計に送る1件：タイプ・割合・22問の回答・版だけで、ほかの情報を含まない", ()=>{
+  const ans=[...fill(1),2,-1];
+  const rec=buildRecord(score(ans,[...AXIS_OF,null,null]),ans,"2026-10-01");
+  assert.deepEqual(Object.keys(rec).sort(),["ans","pa","pb","type","v"]);
+  assert.equal(rec.ans.length,22);
+  assert.equal(rec.type,"fund");
+  ans[0]=-2; assert.equal(rec.ans[0],1); // 元の配列を後から変えても影響しない
+});
+
+test("集計は公開ページ（https の github.io）だけで送り、手元の確認では送らない", ()=>{
+  assert.equal(collectAllowed({protocol:"https:",hostname:"t-hirata-netizen.github.io"}),true);
+  assert.equal(collectAllowed({protocol:"http:",hostname:"localhost"}),false);
+  assert.equal(collectAllowed({protocol:"file:",hostname:""}),false);
+  assert.equal(collectAllowed({protocol:"https:",hostname:"github.io.example.com"}),false);
+});
+
+test("Apps Script の質問数は index.html と同じ", ()=>{
+  assert.equal(gs.N,Q_ROWS.length);
+});
+
+test("アプリが送るデータは、Apps Script の確認をすべて通る", ()=>{
+  const rnd=rng(9), axes=Q_ROWS.map(r=>r.ax), ver=HTML.match(/const APP_VERSION="([^"]+)"/)[1];
+  for(let n=0;n<2000;n++){
+    const a=axes.map(()=>[-2,-1,1,2][Math.floor(rnd()*4)]);
+    const rec=JSON.parse(JSON.stringify(buildRecord(score(a,axes),a,ver)));
+    assert.ok(gs.isValid(rec),JSON.stringify(rec));
+  }
+});
+
+test("Apps Script は形の崩れたデータを記録しない", ()=>{
+  const good={v:"2026-10-01",type:"fund",pa:40,pb:60,ans:new Array(22).fill(1)};
+  assert.ok(gs.isValid(good));
+  const bad=[
+    {...good,type:"x"}, {...good,pa:41}, {...good,pa:60,pb:40}, {...good,ans:new Array(21).fill(1)},
+    {...good,ans:[...new Array(21).fill(1),0]}, {...good,ans:[...new Array(21).fill(1),"1"]},
+    {...good,v:""}, {...good,v:"x".repeat(21)}, null, "text"
+  ];
+  for(const b of bad)assert.ok(!gs.isValid(b),JSON.stringify(b));
+});
+
+test("画面に「送信しません」など、事実と違う説明が残っていない", ()=>{
+  for(const page of ["index.html","tech.html","fund.html"]){
+    const h=fs.readFileSync(path.join(__dirname,"..",page),"utf8");
+    assert.doesNotMatch(h,/送信しません|送信されません/,page);
+  }
 });

@@ -71,6 +71,17 @@
     return {side:x<0?"a":"b",strong:Math.abs(x)>=0.6};
   }
 
-  const api={score,pickCourses,axisLean};
+  // 匿名の集計に送る1件分。名前・会員ID・メール・端末の情報などは入れない
+  // v: アプリの版（重みや質問を変えた時期を見分ける）、ans: 22問の回答（-2,-1,1,2）
+  function buildRecord(r, ans, v){
+    return {v:String(v), type:r.key, pa:r.pa, pb:r.pb, ans:ans.slice()};
+  }
+
+  // 集計に送ってよい場所か。公開ページ（GitHub Pages）だけ送り、手元での確認（localhost・ファイル）では送らない
+  function collectAllowed(loc){
+    return loc.protocol==="https:" && /\.github\.io$/.test(loc.hostname);
+  }
+
+  const api={score,pickCourses,axisLean,buildRecord,collectAllowed};
   if(typeof module==="object"&&module.exports)module.exports=api; else root.GFSScore=api;
 })(typeof globalThis!=="undefined"?globalThis:this);

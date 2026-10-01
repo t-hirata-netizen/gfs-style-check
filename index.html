@@ -323,6 +323,9 @@ const TYPES={
   good:["納得してから買うので、値動きに振り回されにくい","日中に時間がなくても続けやすい","配当や株主優待という楽しみも持てる"],
   care:["成果が出るまで時間がかかることを、最初から知っておく","業績が悪くなったら、持ち続けるか見直す","最初は100円株など少額で練習する"]}
 };
+// 匿名の集計（Googleスプレッドシートの Apps Script の受け取り口）。空なら送らない。設定方法は CLAUDE.md
+const COLLECT_URL="https://script.google.com/macros/s/AKfycbxYExdO0AMq_XbFkJtRoZJL0q13Q4AcO5B_XCtUEnr3om1uIyQ3r0sGx0cD4do2RCXObQ/exec";
+const APP_VERSION="2026-10-01"; // 質問・重み・判定を変えたら日付を更新する（集計で前後を見分けるため）
 const $=id=>document.getElementById(id);
 const KEY="gfs-style-test-v1";
 let ans=new Array(Q.length).fill(null), cur=0, locked=false, announced=-1, shareKey=null;
@@ -397,6 +400,7 @@ function finish(){
   $("copyText").value=lines.join("\n"); $("copyText").hidden=true;
   $("btnCopy").textContent="結果をコピー";
   shareKey=r.key; $("shareNote").textContent="";
+  collect(GFSScore.buildRecord(r,ans,APP_VERSION));
   clear(); show("result");
 }
 
@@ -415,6 +419,14 @@ $("btnCopy").onclick=async()=>{
   try{await navigator.clipboard.writeText(t);$("btnCopy").textContent="コピーしました"}
   catch(e){$("copyText").hidden=false;$("copyText").focus();$("copyText").select();$("btnCopy").textContent="下の文を選択してコピーしてください"}
 };
+// 結果を匿名で送る。送れなくても診断には影響させない（エラーは表示しない）
+function collect(rec){
+  if(!COLLECT_URL||!GFSScore.collectAllowed(location))return;
+  try{
+    fetch(COLLECT_URL,{method:"POST",mode:"no-cors",keepalive:true,
+      headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(rec)}).catch(()=>{});
+  }catch(e){}
+}
 $("btnShare").onclick=async()=>{
   const T=TYPES[shareKey], url=new URL(shareKey+".html",location.href).href;
   const text=`GFS 投資スタイル診断の結果は「${T.name}（${T.style}）」でした。あなたはどっち？`;
