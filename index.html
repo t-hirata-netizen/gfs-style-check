@@ -325,7 +325,7 @@ const TYPES={
 };
 // 匿名の集計（Googleスプレッドシートの Apps Script の受け取り口）。空なら送らない。設定方法は CLAUDE.md
 const COLLECT_URL="https://script.google.com/macros/s/AKfycbxYExdO0AMq_XbFkJtRoZJL0q13Q4AcO5B_XCtUEnr3om1uIyQ3r0sGx0cD4do2RCXObQ/exec";
-const APP_VERSION="2026-10-01b"; // 質問・重み・判定を変えたら日付を更新する（集計で前後を見分けるため）
+const APP_VERSION="2026-10-01"; // 質問の趣旨・重み・判定を変えたら日付を更新する（集計で前後を見分けるため）。言い回しだけの修正では変えない
 const $=id=>document.getElementById(id);
 const KEY="gfs-style-test-v1";
 let ans=new Array(Q.length).fill(null), cur=0, locked=false, announced=-1, shareKey=null;
