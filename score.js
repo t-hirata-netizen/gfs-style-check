@@ -32,7 +32,8 @@
     return {key,axis,axisMax,pa:100-pb,pb};
   }
 
-  // 結果画面に出す講義。一番上1つ（main）＋あわせて2つ＋興味に合わせた講義（アメリカ株・IPO）
+  // 結果画面に出す講義。一番上（main）は講義一覧、その次に実践コース2つまで＋興味に合わせた講義（アメリカ株・IPO）
+  // 実践コースはいきなりは難しいので、講義一覧で基礎を学んでから進む順にする（2026-10 オーナーの希望）
   // 返り値: [{id, tag, main}]。講義名・URLは index.html の COURSES にある
   function pickCourses(r, ans){
     const close=Math.max(r.pa,r.pb)<=CLOSE;
@@ -41,7 +42,7 @@
       main={id:"endo",tag:"まずはここから"};
       if(close||r.axis[1]>=0)subs.push({id:"apollo",tag:"企業の中身も気になるなら"});
       if(ans[Q_RULE]===-2)subs.push({id:"kenmo",tag:"ルールとデータで判断したいなら"});
-      fill=[{id:"lectures",tag:"あわせて"}];
+      fill=[];
     }else{
       if(ans[Q_DIVIDEND]===2)main={id:"ricky",tag:"配当・優待への関心が強いあなたに"};
       else if(ans[Q_TREND]===2)main={id:"takezou",tag:"これから伸びる業界に注目するあなたに"};
@@ -53,7 +54,9 @@
       if(r.axis[0]>=0.6*r.axisMax[0])subs.push({id:"hemu",tag:"割安な株をじっくり持ちたいなら"});
       fill=[{id:"ichikawa",tag:"チャートも組み合わせたいなら"},{id:"hemu",tag:"割安な株をじっくり持ちたいなら"}];
     }
-    const used=new Set([main.id]), out=[{...main,main:true}];
+    const list=r.key==="tech"?{id:"lectures",tag:"まずはここから"}:{id:"lecturesFund",tag:"まずはここから"};
+    if(main.tag==="まずはここから")main={...main,tag:"講義一覧のあとに"};
+    const used=new Set([list.id,main.id]), out=[{...list,main:true},{...main,main:false}];
     for(const c of [...subs,...fill]){
       if(out.length>=3)break;
       if(used.has(c.id))continue;

@@ -240,6 +240,7 @@ ul.list li{margin:5px 0}
     </div>
     <div class="card">
       <h2>次に見る講義</h2>
+      <p style="margin:0 0 10px;font-size:14px">実践コースは、講義一覧で基礎を学んでから進むのがおすすめです。</p>
       <div class="course" id="rCourse"></div>
       <p class="note">ほかの実践コースも見たいときは <a class="all" href="https://gfs.tokyo/inv-methods/" target="_blank" rel="noopener">実践コース一覧（全9コース）→</a>。各コースの特徴を解説した動画もあります。</p>
       <p class="note">迷ったら、専任コンサルに「診断で〇〇型だった。次はどの講義？」と聞いてください。</p>
@@ -265,7 +266,7 @@ ul.list li{margin:5px 0}
 
 <p class="toast" id="closeNote" role="status" hidden>このブラウザでは自動で閉じられません。画面の上にある「×」や「完了」で閉じてください。</p>
 
-<script src="score.js?v=40702156"></script><!-- ?v= は score.js の中身から作る記号（SHA-1 の先頭8文字）。score.js を変えたら npm test が新しい値を教えてくれる -->
+<script src="score.js?v=b97313bb"></script><!-- ?v= は score.js の中身から作る記号（SHA-1 の先頭8文字）。score.js を変えたら npm test が新しい値を教えてくれる -->
 <script>
 (function(){
 const AXES=[
@@ -318,6 +319,7 @@ const COURSES={
  apollo:    {cat:"tech",nm:"実践コース：アポロ講師",url:"https://gfs.tokyo/inv-methods/course/technical/apollo.php",ds:"国際認定アナリスト直伝。複数視点で相場を読み解く多角的分析コース"},
  kenmo:     {cat:"tech",nm:"実践コース：Kenmo講師",url:"https://gfs.tokyo/inv-methods/course/technical/kenmo.php",ds:"トレンドの初動を掴む、新高値ブレイク投資コース"},
  lectures:  {cat:"tech",nm:"講義一覧：株式投資 › テクニカル分析編",url:"https://gfs.tokyo/search/lecture/",ds:"講義一覧の「株式投資」タブにあります。トレンド・移動平均線・RSI・MACDなど、指標ごとの講義を選んで見られます"},
+ lecturesFund:{cat:"fund",nm:"講義一覧：株式投資 › ファンダメンタルズ分析編",url:"https://gfs.tokyo/search/lecture/",ds:"講義一覧の「株式投資」タブにあります。決算書（貸借対照表・損益計算書）や投資指標など、企業の中身を見る基礎を学べます"},
  ichikawa:  {cat:"fund",nm:"実践コース：市川校長",url:"https://gfs.tokyo/inv-methods/course/fundamentals/ichikawa.php",ds:"GFS校長が直伝！決算・チャートで学ぶバランス型投資コース"},
  hemu:      {cat:"fund",nm:"実践コース：ヘム講師",url:"https://gfs.tokyo/inv-methods/course/fundamentals/hemu.php",ds:"暴落はチャンス！ヘム式バリュー投資コース"},
  takezou:   {cat:"fund",nm:"実践コース：たけぞう講師",url:"https://gfs.tokyo/inv-methods/course/fundamentals/takezou.php",ds:"トレンドの波を捉えて稼ぐ、テーマ株投資コース"},

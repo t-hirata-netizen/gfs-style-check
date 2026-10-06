@@ -131,14 +131,16 @@ const AXES22=[...AXIS_OF,null,null];
 const pick=a=>pickCourses(score(a,AXES22),a);
 const ids=a=>pick(a).map(c=>c.id);
 
-test("テクニカル派：一番上は遠藤講師、あわせては埋まらなければ講義一覧", ()=>{
-  const c=pick(ans22(-2));
-  assert.equal(c[0].id,"endo"); assert.equal(c[0].main,true);
-  assert.deepEqual(ids(ans22(-1)),["endo","lectures"]);
+test("一番上は講義一覧（実践コースより先）。テクニカル派はテクニカル分析編、ファンダ派はファンダメンタルズ分析編", ()=>{
+  const t=pick(ans22(-2)), f=pick(ans22(1));
+  assert.equal(t[0].id,"lectures"); assert.equal(t[0].main,true);
+  assert.equal(f[0].id,"lecturesFund"); assert.equal(f[0].main,true);
+  assert.deepEqual(ids(ans22(-1)),["lectures","endo"]);
+  assert.equal(t[1].tag,"講義一覧のあとに");
 });
 
 test("テクニカル派：Q8に「Aにとても近い」→ Kenmo講師", ()=>{
-  assert.deepEqual(ids(ans22(-1,{7:-2})),["endo","kenmo","lectures"]);
+  assert.deepEqual(ids(ans22(-1,{7:-2})),["lectures","endo","kenmo"]);
 });
 
 test("テクニカル派：僅差（60%以下）か判断材料がファンダ寄り → アポロ講師", ()=>{
@@ -146,34 +148,34 @@ test("テクニカル派：僅差（60%以下）か判断材料がファンダ�
   const a=ans22(-2,{5:1,6:1,7:1,8:1,9:1});
   const r=score(a,AXES22);
   assert.equal(r.key,"tech"); assert.ok(r.axis[1]>0);
-  assert.deepEqual(ids(a).slice(0,2),["endo","apollo"]);
+  assert.deepEqual(ids(a).slice(0,3),["lectures","endo","apollo"]);
   // 僅差：テクニカル55%前後
   const b=AXIS_OF.map((_,i)=>i<11?-1:1); b.push(-1,-1);
   const rb=score(b,AXES22); assert.equal(rb.key,"tech"); assert.ok(rb.pa<=60);
   assert.ok(ids(b).includes("apollo"));
 });
 
-test("ファンダ派：はっきりファンダ → 一番上はヘム講師", ()=>{
+test("ファンダ派：はっきりファンダ → 講義一覧の次はヘム講師", ()=>{
   const c=pick(ans22(1));
-  assert.equal(c[0].id,"hemu"); assert.equal(c[0].main,true);
+  assert.equal(c[1].id,"hemu"); assert.equal(c[1].main,false);
   assert.equal(c.length,3);
 });
 
-test("ファンダ派：Q5に「Bにとても近い」→ リッキー講師が一番上（仕様5）", ()=>{
+test("ファンダ派：Q5に「Bにとても近い」→ 実践コースの一番目はリッキー講師（仕様5）", ()=>{
   const c=pick(ans22(2));
-  assert.equal(c[0].id,"ricky");
+  assert.equal(c[1].id,"ricky");
 });
 
-test("ファンダ派：Q9に「Bにとても近い」→ たけぞう講師が一番上。配当と両方ならリッキー講師が上", ()=>{
-  assert.equal(pick(ans22(1,{8:2}))[0].id,"takezou");
+test("ファンダ派：Q9に「Bにとても近い」→ 実践コースの一番目はたけぞう講師。配当と両方ならリッキー講師が先", ()=>{
+  assert.equal(pick(ans22(1,{8:2}))[1].id,"takezou");
   const both=ids(ans22(1,{4:2,8:2}));
-  assert.equal(both[0],"ricky"); assert.equal(both[1],"takezou");
+  assert.equal(both[1],"ricky"); assert.equal(both[2],"takezou");
 });
 
-test("ファンダ派：僅差（60%以下）→ 市川校長が一番上", ()=>{
+test("ファンダ派：僅差（60%以下）→ 実践コースの一番目は市川校長", ()=>{
   const a=AXIS_OF.map((_,i)=>i<11?1:-1); a.push(-1,-1);
   const r=score(a,AXES22); assert.equal(r.key,"fund"); assert.ok(r.pb<=60);
-  assert.equal(pick(a)[0].id,"ichikawa");
+  assert.equal(pick(a)[1].id,"ichikawa");
 });
 
 test("ファンダ派：Q5に「Bにやや近い」→ あわせてにリッキー講師", ()=>{
@@ -199,13 +201,14 @@ test("講義の並び：一番上は1つだけ、同じ講義は2回出ない、
     assert.equal(new Set(c.map(x=>x.id)).size,c.length);
     const extra=c.filter(x=>x.id==="rironkabuo"||x.id==="tenbagger").length;
     assert.ok(c.length-extra>=2 && c.length-extra<=3);
+    assert.ok(c[0].id==="lectures"||c[0].id==="lecturesFund"); // いつも講義一覧が先
     for(const x of c)assert.ok(x.tag.length>0);
   }
 });
 
 test("講義のURLは gfs.tokyo のページで、個人識別用のパラメータを含まない", ()=>{
   const urls=[...HTML.matchAll(/url:"([^"]*)"/g)].map(m=>m[1]);
-  assert.equal(urls.length,10);
+  assert.equal(urls.length,11);
   for(const u of urls){
     assert.match(u,/^https:\/\/gfs\.tokyo\//);
     assert.doesNotMatch(u,/[?&#]/); // lmclid などを入れない（このリポジトリは Public）
@@ -219,7 +222,7 @@ test("score.js が使う講義IDが、すべて index.html の COURSES にある
   const all=fs.readFileSync(path.join(__dirname,"..","score.js"),"utf8");
   const src=all.slice(all.indexOf("function pickCourses("),all.indexOf("function pickLives(")); // 講師の講義だけ（ライブ講義は別のテスト）
   const used=new Set([...src.matchAll(/id:"(\w+)"/g)].map(m=>m[1]));
-  assert.equal(defined.size,10);
+  assert.equal(defined.size,11);
   for(const id of used)assert.ok(defined.has(id),id);
 });
 
