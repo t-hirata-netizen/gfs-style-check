@@ -388,9 +388,8 @@ function finish(){
   const courses=GFSScore.pickCourses(r,ans).map(p=>({...COURSES[p.id],tag:p.tag,cls:COURSES[p.id].cat+(p.main?" main":"")}));
   $("rCourse").innerHTML=courses.map(c=>`<div class="cr ${c.cls}"><div class="tag">${c.tag}</div><div class="nm">${c.nm}</div><div class="ds">${c.ds}</div>${c.url?`<a class="go" href="${c.url}" target="_blank" rel="noopener">講義を見る →</a>`:""}</div>`).join("");
   const lines=[`【GFS 投資スタイル診断の結果】`,`タイプ：${T.name}（${T.style}）`,`テクニカル ${r.pa}% ／ ファンダメンタルズ ${r.pb}%`,
-    ...AXES.map((A,i)=>`・${A.name}：${r.axis[i]<0?A.a:r.axis[i]>0?A.b:"どちらでもない"}`),
-    `次に見る講義：${courses[0].nm}`,
-    ...(courses.length>1?[`あわせて：${courses.slice(1).map(c=>c.nm).join("、")}`]:[]),`次に見る講義はこれで合っていますか？`];
+    ...AXES.map((A,i)=>`・${A.name}：${r.axis[i]<0?A.a:r.axis[i]>0?A.b:"どちらでもない"}`)];
+  // 講義名はコピー文に入れない（専任コンサルに伝える必要はない、とのフィードバック。2026-10）
   $("copyText").value=lines.join("\n"); $("copyText").hidden=true;
   $("btnCopy").textContent="結果をコピー";
   collect(GFSScore.buildRecord(r,ans,APP_VERSION));

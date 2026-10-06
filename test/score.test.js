@@ -320,3 +320,9 @@ test("Apps Script は形の崩れたデータを記録しない", ()=>{
 test("画面に「送信しません」など、事実と違う説明が残っていない", ()=>{
   assert.doesNotMatch(HTML,/送信しません|送信されません/);
 });
+
+test("「結果をコピー」の文に講義名を入れない（専任コンサルに伝える必要はない、とのフィードバック）", ()=>{
+  const a=HTML.indexOf("const lines=["), b=HTML.indexOf('$("copyText").value',a);
+  const block=HTML.slice(a,b);
+  assert.doesNotMatch(block,/次に見る講義|あわせて|courses/);
+});
