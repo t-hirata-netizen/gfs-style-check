@@ -145,6 +145,14 @@ ul.list li{margin:5px 0}
 .cr .ds{font-size:14px;margin-top:2px}
 .cr .go{display:inline-block;margin-top:10px;padding:8px 14px;border-radius:10px;font-weight:900;font-size:14px;text-decoration:none}
 .cr.tech .go{background:var(--tech);color:var(--on-tech)}.cr.fund .go{background:var(--fund);color:var(--on-fund)}
+.lives{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.lv{display:grid;grid-template-columns:1fr auto;column-gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--body);background:var(--surface)}
+.lv:hover{border-color:var(--muted)}
+.lv-tag{grid-column:1;font-size:12px;font-weight:900;letter-spacing:.06em}
+.lv.tech .lv-tag{color:var(--tech-ink)}.lv.fund .lv-tag{color:var(--fund-ink)}
+.lv-nm{grid-column:1;font-weight:900;color:var(--ink);font-size:15px;line-height:1.5}
+.lv-ds{grid-column:1;font-size:13px;line-height:1.6}
+.lv-go{grid-column:2;grid-row:1/4;align-self:center;font-weight:900;font-size:18px;color:var(--ink)}
 .note a.all{color:var(--ink);font-weight:700}
 .cr .go:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 .note{font-size:13px;color:var(--muted);margin-top:14px}
@@ -238,6 +246,12 @@ ul.list li{margin:5px 0}
     </div>
 
     <div class="card">
+      <h2>あわせて見たいライブ講義</h2>
+      <p style="margin:0 0 10px;font-size:14px">過去のライブ講義は、いつでも見返せます。タップすると一覧が開きます。</p>
+      <ul class="lives" id="rLives"></ul>
+    </div>
+
+    <div class="card">
       <h2>結果を専任コンサルに送る</h2>
       <p style="margin:0;font-size:14px">コピーして、LINEなどに貼り付けて送れます。</p>
       <div class="row"><button class="copy" id="btnCopy">結果をコピー</button></div>
@@ -251,7 +265,7 @@ ul.list li{margin:5px 0}
 
 <p class="toast" id="closeNote" role="status" hidden>このブラウザでは自動で閉じられません。画面の上にある「×」や「完了」で閉じてください。</p>
 
-<script src="score.js"></script>
+<script src="score.js?v=2026-10-06"></script><!-- score.js を変えたら ?v= の日付も変える（古い score.js がブラウザに残って動かなくなるのを防ぐ） -->
 <script>
 (function(){
 const AXES=[
@@ -310,6 +324,22 @@ const COURSES={
  ricky:     {cat:"fund",nm:"実践コース：リッキー講師",url:"https://gfs.tokyo/inv-methods/course/fundamentals/ricky.php",ds:"売らずに育てる資産形成、配当戦略実践コース"},
  rironkabuo:{cat:"fund",nm:"実践コース：りろんかぶお講師",url:"https://gfs.tokyo/inv-methods/course/fundamentals/RironKabuo.php",ds:"AI時代の成長戦略を学ぶ、米国株投資コース"},
  tenbagger: {cat:"fund",nm:"実践コース：テンバガー投資家X",url:"https://gfs.tokyo/inv-methods/course/fundamentals/tenbagger-x.php",ds:"10倍株を掴む、IPOセカンダリー投資コース"}
+};
+// ライブ講義（過去回の一覧ページへ移る）。どれを出すかは score.js の pickLives() が決める
+// href は gfs.tokyo のページだけ。ログインした人ごとの識別用パラメータは付けない
+const LIVES={
+ endoLive:      {cat:"tech",nm:"遠藤講師のライブ講義",ds:"テクニカル分析の“次の一手”。相場の背景を読み解く力",href:"https://gfs.tokyo/search/lecture/result/tagcat?child_id=247"},
+ apolloLive:    {cat:"tech",nm:"アポロ講師 相場の心得ライブ",ds:"実際のチャートを分析しながら、投資戦略の組み立て方を解説",href:"https://gfs.tokyo/search/lecture/result/tagcat?child_id=252"},
+ kojiro:        {cat:"tech",nm:"小次郎講師の大循環チャートライブ",ds:"チャートを読むための本質的な考え方",href:"https://gfs.tokyo/search/lecture/result/tagcat?child_id=152"},
+ hideya:        {cat:"tech",nm:"上野ひでや講師の特別ライブ講義",ds:"相場が大きく動いたときに、背景と今後の展開を解説",href:"https://gfs.tokyo/search/lecture/result/tagcat?child_id=240"},
+ uenoTech:      {cat:"tech",nm:"上野講師の生ライブ講義（第30回〜）",ds:"ナイオク講義。第30回以降はテクニカル寄りの内容",href:"https://gfs.tokyo/search/lecture/result/tagcat?child_id=118"},
+ amemiya:       {cat:"tech",nm:"雨宮京子 株式投資の魅力と銘柄分析",ds:"売りのタイミングやロスカット、銘柄選びの考え方",href:"https://gfs.tokyo/search/lecture/result/tagcat?child_id=129"},
+ ichikawaTalk:  {cat:"fund",nm:"市川雄一郎の上場企業経営者対談",ds:"経営トップとの対談で、企業を見る目を養う",href:"https://gfs.tokyo/search/lecture/result/tagcat?child_id=189"},
+ fujimoto:      {cat:"fund",nm:"藤本誠之の月例マーケットライブ",ds:"企業の社長に直接会って集めた情報で銘柄を分析",href:"https://gfs.tokyo/search/lecture/result/tagcat?child_id=119"},
+ uenoFund:      {cat:"fund",nm:"上野講師の生ライブ講義（第1〜29回）",ds:"ナイオク講義。第29回まではファンダメンタルズ寄りの内容",href:"https://gfs.tokyo/search/lecture/result/tagcat?child_id=118"},
+ takezouLive:   {cat:"fund",nm:"たけぞうの特別ライブ講義",ds:"株式相場の最新動向と注目セクター",href:"https://gfs.tokyo/search/lecture/result/tagcat?child_id=131"},
+ sakamoto:      {cat:"fund",nm:"プロ投資家の流儀ライブ（坂本講師）",ds:"相場の解説、注目テーマ、銘柄の探し方",href:"https://gfs.tokyo/search/lecture/result/tagcat?child_id=153"},
+ ichikawaOnline:{cat:"fund",nm:"GFS市川雄一郎校長のオンライン授業",ds:"資産運用の考え方とリスク管理。基礎編（2025年2〜5月度）から順に",href:"https://gfs.tokyo/search/lecture/result/?search_word=GFS%E5%B8%82%E5%B7%9D%E9%9B%84%E4%B8%80%E9%83%8E%E6%A0%A1%E9%95%B7%E3%81%AE%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E6%8E%88%E6%A5%AD&search_including_tags=1"}
 };
 const TYPES={
  tech:{name:"チャートハンター型",style:"テクニカル派",
@@ -392,6 +422,10 @@ function finish(){
   $("rCare").innerHTML=T.care.map(x=>`<li>${x}</li>`).join("");
   const courses=GFSScore.pickCourses(r,ans).map(p=>({...COURSES[p.id],tag:p.tag,cls:COURSES[p.id].cat+(p.main?" main":"")}));
   $("rCourse").innerHTML=courses.map(c=>`<div class="cr ${c.cls}"><div class="tag">${c.tag}</div><div class="nm">${c.nm}</div><div class="ds">${c.ds}</div>${c.url?`<a class="go" href="${c.url}" target="_blank" rel="noopener">講義を見る →</a>`:""}</div>`).join("");
+  const lives=typeof GFSScore.pickLives==="function"?GFSScore.pickLives(r,ans):[]; // 古い score.js が残っていても結果画面は出す
+  $("rLives").closest(".card").hidden=lives.length===0;
+  $("rLives").innerHTML=lives.map(p=>{const L=LIVES[p.id];
+    return `<li><a class="lv ${L.cat}" href="${L.href}" target="_blank" rel="noopener"><span class="lv-tag">${p.tag}</span><span class="lv-nm">${L.nm}</span><span class="lv-ds">${L.ds}</span><span class="lv-go" aria-hidden="true">→</span></a></li>`}).join("");
   const lines=[`【GFS 投資スタイル診断の結果】`,`タイプ：${T.name}（${T.style}）`,`テクニカル ${r.pa}% ／ ファンダメンタルズ ${r.pb}%`,
     ...AXES.map((A,i)=>`・${A.name}：${r.axis[i]<0?A.a:r.axis[i]>0?A.b:"どちらでもない"}`)];
   // 講義名はコピー文に入れない（専任コンサルに伝える必要はない、とのフィードバック。2026-10）

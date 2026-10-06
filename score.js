@@ -4,6 +4,7 @@
   const Q_DIVIDEND=4;   // Q5 配当・優待
   const Q_RULE=7;       // Q8 決まったルールやパターン
   const Q_TREND=8;      // Q9 これから伸びそうな業界
+  const Q_LOSSCUT=17;   // Q18 損をしても、すぐ切り替えられる（A）
   const Q_US=20;        // Q21 アメリカ株（タイプ判定には使わない）
   const Q_IPO=21;       // Q22 IPO（タイプ判定には使わない）
   const CLOSE=60;       // 「僅差」の目安：多い方の割合がこの値以下
@@ -63,6 +64,27 @@
     return out;
   }
 
+  // 結果画面に出すライブ講義（最大3本）。返り値: [{id, tag}]。名前・リンクは index.html の LIVES にある
+  // 2026-10 オーナーと合意した対象10シリーズ＋市川校長のオンライン授業から選ぶ
+  function pickLives(r, ans){
+    const close=Math.max(r.pa,r.pb)<=CLOSE;
+    const c=[];
+    if(r.key==="tech"){
+      c.push({id:"endoLive",tag:"テクニカルをライブで深める"});
+      if(close||r.axis[1]>=0)c.push({id:"apolloLive",tag:"チャートと相場観を両方みがく"});
+      if(ans[Q_LOSSCUT]===-2)c.push({id:"amemiya",tag:"売買のタイミングと損切りを学ぶ"});
+      if(close)c.push({id:"ichikawaOnline",tag:"両方の考え方を基礎から"});
+      c.push({id:"kojiro",tag:"チャート分析の本質を学ぶ"},{id:"uenoTech",tag:"第30回以降がテクニカル編"},{id:"hideya",tag:"大きく動いた相場を読み解く"});
+    }else{
+      if(ans[Q_TREND]===2)c.push({id:"takezouLive",tag:"注目セクターをライブで"});
+      if(close)c.push({id:"ichikawaOnline",tag:"両方の考え方を基礎から"});
+      c.push({id:"ichikawaTalk",tag:"企業を見る目を養う"},{id:"fujimoto",tag:"社長への取材から銘柄を学ぶ"},{id:"sakamoto",tag:"注目テーマと銘柄の探し方"},{id:"uenoFund",tag:"第1〜29回がファンダメンタルズ編"});
+    }
+    const used=new Set(), out=[];
+    for(const x of c){ if(out.length>=3)break; if(used.has(x.id))continue; used.add(x.id); out.push(x); }
+    return out;
+  }
+
   // 軸ごとの寄り具合（結果画面の解説に使う）。v: 軸の合計、max: その軸の最大値
   // 最大値の2割未満は「どちらとも」（mid）、6割以上は「はっきり」（strong）
   function axisLean(v, max){
@@ -82,6 +104,6 @@
     return loc.protocol==="https:" && /\.github\.io$/.test(loc.hostname);
   }
 
-  const api={score,pickCourses,axisLean,buildRecord,collectAllowed};
+  const api={score,pickCourses,pickLives,axisLean,buildRecord,collectAllowed};
   if(typeof module==="object"&&module.exports)module.exports=api; else root.GFSScore=api;
 })(typeof globalThis!=="undefined"?globalThis:this);

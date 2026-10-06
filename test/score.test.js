@@ -3,7 +3,7 @@ const test=require("node:test");
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
-const {score,pickCourses,axisLean,buildRecord,collectAllowed}=require("../score.js");
+const {score,pickCourses,pickLives,axisLean,buildRecord,collectAllowed}=require("../score.js");
 const vm=require("node:vm");
 
 // 今の質問の並び（タイプ判定に使う20問）。Q13（番号12）は判断材料の軸
@@ -216,7 +216,8 @@ test("講義のURLは gfs.tokyo のページで、個人識別用のパラメー
 test("score.js が使う講義IDが、すべて index.html の COURSES にある", ()=>{
   const block=HTML.slice(HTML.indexOf("const COURSES={"),HTML.indexOf("};",HTML.indexOf("const COURSES={")));
   const defined=new Set([...block.matchAll(/^ (\w+):\s*\{/gm)].map(m=>m[1]));
-  const src=fs.readFileSync(path.join(__dirname,"..","score.js"),"utf8");
+  const all=fs.readFileSync(path.join(__dirname,"..","score.js"),"utf8");
+  const src=all.slice(all.indexOf("function pickCourses("),all.indexOf("function pickLives(")); // 講師の講義だけ（ライブ講義は別のテスト）
   const used=new Set([...src.matchAll(/id:"(\w+)"/g)].map(m=>m[1]));
   assert.equal(defined.size,10);
   for(const id of used)assert.ok(defined.has(id),id);
@@ -335,4 +336,54 @@ test("閉じるボタン：質問画面の×と結果画面の「閉じる」は
   assert.doesNotMatch(f,/location\.href|history\.back|EXIT_URL/); // 閉じられなくても移動しない
   assert.match(HTML,/id="closeNote"[^>]*role="status"/);           // 閉じられないときの案内
   assert.match(HTML,/\$\("btnX"\)\.hidden=id!=="quiz"/); // ×は質問画面だけ
+});
+
+// ---- ライブ講義 ----
+const lives=a=>pickLives(score(a,AXES22),a).map(x=>x.id);
+
+test("ライブ講義：最大3本、重複なし、どれも index.html の LIVES にある", ()=>{
+  const block=HTML.slice(HTML.indexOf("const LIVES={"),HTML.indexOf("};",HTML.indexOf("const LIVES={")));
+  const defined=new Set([...block.matchAll(/^ (\w+):\s*\{/gm)].map(m=>m[1]));
+  assert.equal(defined.size,12);
+  const rnd=rng(21);
+  for(let n=0;n<3000;n++){
+    const a=AXES22.map(()=>[-2,-1,1,2][Math.floor(rnd()*4)]);
+    const c=pickLives(score(a,AXES22),a);
+    assert.ok(c.length>=1&&c.length<=3);
+    assert.equal(new Set(c.map(x=>x.id)).size,c.length);
+    for(const x of c){assert.ok(defined.has(x.id),x.id); assert.ok(x.tag.length>0);}
+  }
+});
+
+test("ライブ講義：テクニカル派は遠藤講師が一番上、ファンダ派は市川校長の経営者対談が入る", ()=>{
+  assert.equal(lives(ans22(-1))[0],"endoLive");
+  assert.ok(lives(ans22(1)).includes("ichikawaTalk"));
+});
+
+test("ライブ講義：僅差なら市川校長のオンライン授業、Q9を強く選んだファンダ派はたけぞう講師", ()=>{
+  const a=AXIS_OF.map((_,i)=>i<11?1:-1); a.push(-1,-1);
+  assert.ok(Math.max(score(a,AXES22).pa,score(a,AXES22).pb)<=60);
+  assert.ok(lives(a).includes("ichikawaOnline"));
+  assert.equal(lives(ans22(1,{8:2}))[0],"takezouLive");
+});
+
+test("ライブ講義：Q18を強く選んだテクニカル派は雨宮講師が入る", ()=>{
+  assert.ok(lives(ans22(-1,{17:-2})).includes("amemiya"));
+  assert.ok(!lives(ans22(-1,{17:-1})).includes("amemiya"));
+});
+
+test("ライブ講義のリンクは gfs.tokyo のページで、個人識別用のパラメータを含まない", ()=>{
+  const hrefs=[...HTML.matchAll(/href:"([^"]*)"/g)].map(m=>m[1]);
+  assert.equal(hrefs.length,12);
+  for(const h of hrefs){ assert.match(h,/^https:\/\/gfs\.tokyo\//); assert.doesNotMatch(h,/lmclid/); }
+  // 対象外にしたシリーズ（堀・DAIBOUCHOU・上岡・藤本トップインタビュー・配信オンライン授業）は入れない
+  for(const id of [126,125,130,123,120])assert.ok(!hrefs.some(h=>h.endsWith("child_id="+id)),String(id));
+});
+
+test("Q18 は「損をしてもすぐ切り替える」の質問（ライブ講義の条件に使っている）", ()=>{
+  assert.match(Q_ROWS[17].a,/損をしても/);
+});
+
+test("score.js はバージョン付きで読み込む（古いファイルがブラウザに残らないように）", ()=>{
+  assert.match(HTML,/<script src="score\.js\?v=\d{4}-\d{2}-\d{2}"><\/script>/);
 });
