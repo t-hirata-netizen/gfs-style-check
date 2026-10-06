@@ -106,6 +106,8 @@ h1,h2,h3{color:var(--ink);text-wrap:balance;margin:0}
 .nav{display:flex;justify-content:space-between;margin-top:26px}
 .ghost{background:transparent;border:1px solid var(--line);color:var(--body);border-radius:12px;padding:10px 18px;font-weight:700}
 .ghost:disabled{opacity:.35;cursor:default}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));max-width:648px;margin:0 auto;background:var(--ink);color:var(--bg);border-radius:12px;padding:12px 16px;font-size:14px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:10}
+.xbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:22px;line-height:1;display:grid;place-items:center;padding:0}
 
 /* ---------- result ---------- */
 .rhead{border-radius:20px;padding:28px 24px;margin-top:8px;color:#fff}
@@ -155,7 +157,7 @@ ul.list li{margin:5px 0}
 </head>
 <body>
 <div class="wrap">
-  <header class="brand"><div class="logo">GFS<span>投資スタイル診断</span></div></header>
+  <header class="brand"><div class="logo">GFS<span>投資スタイル診断</span></div><button class="xbtn" id="btnX" hidden aria-label="診断をやめて閉じる（答えた分は保存されます）" title="閉じる"><span aria-hidden="true">×</span></button></header>
 
   <!-- START -->
   <section id="start">
@@ -243,9 +245,11 @@ ul.list li{margin:5px 0}
     </div>
 
     <p class="note">※この診断は投資スタイルを選ぶための目安です。やってみて合わなければ、途中で変えても大丈夫です。組み合わせて使う方もたくさんいます。<br>※投資には元本割れなどのリスクがあります。</p>
-    <div class="row"><button class="ghost" id="btnRetry">もう一度診断する</button></div>
+    <div class="row"><button class="ghost" id="btnRetry">もう一度診断する</button><button class="ghost" id="btnClose">閉じる</button></div>
   </section>
 </div>
+
+<p class="toast" id="closeNote" role="status" hidden>このブラウザでは自動で閉じられません。画面の上にある「×」や「完了」で閉じてください。</p>
 
 <script src="score.js"></script>
 <script>
@@ -330,6 +334,7 @@ function clear(){try{localStorage.removeItem(KEY)}catch(e){}}
 
 function show(id){
   for(const s of ["start","quiz","result"])$(s).hidden=(s!==id);
+  $("btnX").hidden=id!=="quiz";
   window.scrollTo(0,0);
   // 画面が切り替わったことを読み上げソフトに伝えるため、見出しにフォーカスを移す
   const h=id==="start"?document.querySelector("#start h1"):id==="result"?$("rName"):null;
@@ -400,6 +405,16 @@ $("btnStart").onclick=()=>{ans=new Array(Q.length).fill(null);cur=0;clear();show
 $("btnResume").onclick=()=>{const d=load();if(d){ans=d.ans;cur=Math.min(d.cur,Q.length-1)}show("quiz");renderQ()};
 $("btnBack").onclick=()=>{if(cur>0){cur--;renderQ();save()}};
 $("btnQuit").onclick=()=>{show("start");refreshResume()};
+// 画面を閉じる（ほかのページには移らない）。ブラウザに止められたときは、閉じ方を案内する
+function closeApp(){
+  try{window.close()}catch(e){}
+  setTimeout(()=>{ // ここまで来たら閉じられなかった
+    const t=$("closeNote"); t.hidden=false;
+    clearTimeout(closeApp.timer); closeApp.timer=setTimeout(()=>{t.hidden=true},6000);
+  },300);
+}
+$("btnX").onclick=closeApp;      // 途中でやめる（答えた分は保存済みなので、次回「続きから再開」できる）
+$("btnClose").onclick=closeApp;  // 結果を見終わった
 $("btnRetry").onclick=()=>{ans=new Array(Q.length).fill(null);cur=0;show("start");refreshResume()};
 document.querySelectorAll(".dot").forEach(d=>d.addEventListener("click",()=>pick(Number(d.dataset.v))));
 document.addEventListener("keydown",e=>{

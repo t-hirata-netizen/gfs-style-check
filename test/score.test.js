@@ -326,3 +326,13 @@ test("「結果をコピー」の文に講義名を入れない（専任コン�
   const block=HTML.slice(a,b);
   assert.doesNotMatch(block,/次に見る講義|あわせて|courses/);
 });
+
+test("閉じるボタン：質問画面の×と結果画面の「閉じる」は閉じるだけで、ほかのページに移らない", ()=>{
+  assert.match(HTML,/id="btnX"[^>]*aria-label="[^"]+"/);
+  assert.match(HTML,/id="btnClose">閉じる</);
+  const f=HTML.slice(HTML.indexOf("function closeApp(){"),HTML.indexOf("$(\"btnX\").onclick"));
+  assert.match(f,/window\.close\(\)/);
+  assert.doesNotMatch(f,/location\.href|history\.back|EXIT_URL/); // 閉じられなくても移動しない
+  assert.match(HTML,/id="closeNote"[^>]*role="status"/);           // 閉じられないときの案内
+  assert.match(HTML,/\$\("btnX"\)\.hidden=id!=="quiz"/); // ×は質問画面だけ
+});
