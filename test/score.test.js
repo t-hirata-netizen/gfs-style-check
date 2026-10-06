@@ -344,7 +344,7 @@ const lives=a=>pickLives(score(a,AXES22),a).map(x=>x.id);
 test("ライブ講義：最大3本、重複なし、どれも index.html の LIVES にある", ()=>{
   const block=HTML.slice(HTML.indexOf("const LIVES={"),HTML.indexOf("};",HTML.indexOf("const LIVES={")));
   const defined=new Set([...block.matchAll(/^ (\w+):\s*\{/gm)].map(m=>m[1]));
-  assert.equal(defined.size,12);
+  assert.equal(defined.size,11);
   const rnd=rng(21);
   for(let n=0;n<3000;n++){
     const a=AXES22.map(()=>[-2,-1,1,2][Math.floor(rnd()*4)]);
@@ -355,9 +355,9 @@ test("ライブ講義：最大3本、重複なし、どれも index.html の LIV
   }
 });
 
-test("ライブ講義：テクニカル派は遠藤講師が一番上、ファンダ派は市川校長の経営者対談が入る", ()=>{
+test("ライブ講義：テクニカル派は遠藤講師が一番上、ファンダ派は藤本講師が入る", ()=>{
   assert.equal(lives(ans22(-1))[0],"endoLive");
-  assert.ok(lives(ans22(1)).includes("ichikawaTalk"));
+  assert.ok(lives(ans22(1)).includes("fujimoto"));
 });
 
 test("ライブ講義：僅差なら市川校長のオンライン授業、Q9を強く選んだファンダ派はたけぞう講師", ()=>{
@@ -374,16 +374,17 @@ test("ライブ講義：Q18を強く選んだテクニカル派は雨宮講師�
 
 test("ライブ講義のリンクは gfs.tokyo のページで、個人識別用のパラメータを含まない", ()=>{
   const hrefs=[...HTML.matchAll(/href:"([^"]*)"/g)].map(m=>m[1]);
-  assert.equal(hrefs.length,12);
+  assert.equal(hrefs.length,11);
   for(const h of hrefs){ assert.match(h,/^https:\/\/gfs\.tokyo\//); assert.doesNotMatch(h,/lmclid/); }
-  // 対象外にしたシリーズ（堀・DAIBOUCHOU・上岡・藤本トップインタビュー・配信オンライン授業）は入れない
-  for(const id of [126,125,130,123,120])assert.ok(!hrefs.some(h=>h.endsWith("child_id="+id)),String(id));
+  // 対象外にしたシリーズ（堀・DAIBOUCHOU・上岡・藤本トップインタビュー・配信オンライン授業・市川校長の経営者対談）は入れない
+  for(const id of [126,125,130,123,120,189])assert.ok(!hrefs.some(h=>h.endsWith("child_id="+id)),String(id));
 });
 
 test("Q18 は「損をしてもすぐ切り替える」の質問（ライブ講義の条件に使っている）", ()=>{
   assert.match(Q_ROWS[17].a,/損をしても/);
 });
 
-test("score.js はバージョン付きで読み込む（古いファイルがブラウザに残らないように）", ()=>{
-  assert.match(HTML,/<script src="score\.js\?v=\d{4}-\d{2}-\d{2}"><\/script>/);
+test("score.js は中身に合った記号付きで読み込む（古いファイルがブラウザに残らないように）", ()=>{
+  const h=require("node:crypto").createHash("sha1").update(fs.readFileSync(path.join(__dirname,"..","score.js"))).digest("hex").slice(0,8);
+  assert.ok(HTML.includes(`<script src="score.js?v=${h}"></script>`),`index.html の score.js?v= を ${h} に変えてください`);
 });

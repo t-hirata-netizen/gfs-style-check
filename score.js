@@ -65,7 +65,7 @@
   }
 
   // 結果画面に出すライブ講義（最大3本）。返り値: [{id, tag}]。名前・リンクは index.html の LIVES にある
-  // 2026-10 オーナーと合意した対象10シリーズ＋市川校長のオンライン授業から選ぶ
+  // 2026-10 オーナーと合意した対象9シリーズ＋市川校長のオンライン授業から選ぶ
   function pickLives(r, ans){
     const close=Math.max(r.pa,r.pb)<=CLOSE;
     const c=[];
@@ -78,7 +78,7 @@
     }else{
       if(ans[Q_TREND]===2)c.push({id:"takezouLive",tag:"注目セクターをライブで"});
       if(close)c.push({id:"ichikawaOnline",tag:"両方の考え方を基礎から"});
-      c.push({id:"ichikawaTalk",tag:"企業を見る目を養う"},{id:"fujimoto",tag:"社長への取材から銘柄を学ぶ"},{id:"sakamoto",tag:"注目テーマと銘柄の探し方"},{id:"uenoFund",tag:"第1〜29回がファンダメンタルズ編"});
+      c.push({id:"fujimoto",tag:"社長への取材から銘柄を学ぶ"},{id:"sakamoto",tag:"注目テーマと銘柄の探し方"},{id:"uenoFund",tag:"第1〜29回がファンダメンタルズ編"});
     }
     const used=new Set(), out=[];
     for(const x of c){ if(out.length>=3)break; if(used.has(x.id))continue; used.add(x.id); out.push(x); }
