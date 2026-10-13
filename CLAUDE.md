@@ -1,6 +1,6 @@
 # CLAUDE.md — GFS 投資スタイル診断（gfs-style-check）
 
-> **【2026-10-13 移転】投資スタイル診断の本番は https://t-hirata-netizen.github.io/gfs-kabu-shindan/ （リポジトリ `t-hirata-netizen/gfs-kabu-shindan`、作業場所 `~/gfs-style-check-chara`、ブランチ `chara`）に移りました。**
+> **【2026-10-13 移転】投資スタイル診断の本番は https://gfs-shindan.github.io/ （組織 `gfs-shindan` のリポジトリ `gfs-shindan.github.io`。元の作業場所は `~/gfs-style-check-chara`、公開用は `~/gfs-shindan-site`）に移りました。** このURLは移行期間のあと非公開にする予定です。
 > このリポジトリの `index.html` は、古いURLを開いた人を新しいURLへ移すだけのページです（`?…` と `#…` も引き継ぐ）。
 > 診断を直すときは `~/gfs-style-check-chara` の CLAUDE.md を読んでください。下の内容は、移転前の記録として残しています。
 > `score.js` は、移転の直後にブラウザに古いページが残っている人のために置いたままにしています（消さない）。

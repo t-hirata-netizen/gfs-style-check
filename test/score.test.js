@@ -1,10 +1,10 @@
-// 旧本番（gfs-style-check）は、新しい本番（gfs-kabu-shindan）へ移るだけのページ。実行: node --test
+// 旧本番（gfs-style-check）は、新しい本番（https://gfs-shindan.github.io/）へ移るだけのページ。実行: node --test
 const test=require("node:test");
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const HTML=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
-const NEW="https://t-hirata-netizen.github.io/gfs-kabu-shindan/";
+const NEW="https://gfs-shindan.github.io/";
 
 test("新しい本番へ移る（URL の ?… と #… も引き継ぐ）", ()=>{
   assert.ok(HTML.includes(`location.replace("${NEW}"+location.search+location.hash)`));
