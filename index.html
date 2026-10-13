@@ -78,6 +78,7 @@ h1,h2,h3{color:var(--ink);text-wrap:balance;margin:0}
 .how li{margin:4px 0}
 .cta{display:block;width:100%;margin-top:18px;background:var(--ink);color:var(--bg);border:0;border-radius:14px;padding:17px;font-weight:900;font-size:17px;letter-spacing:.05em}
 .cta:hover{filter:brightness(1.15)}
+.restored{margin:8px 0 0;padding:10px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-size:13px;color:var(--body)}
 .resume{display:block;width:100%;margin-top:10px;background:transparent;border:1px solid var(--line);color:var(--body);border-radius:14px;padding:13px;font-weight:700}
 
 /* ---------- quiz ---------- */
@@ -187,6 +188,7 @@ ul.list li{margin:5px 0}
     </div>
     <button class="cta" id="btnStart">診断をはじめる</button>
     <button class="resume" id="btnResume" hidden>前回の続きから再開する</button>
+    <button class="resume" id="btnLast" hidden>前回の結果を見る</button>
   </section>
 
   <!-- QUIZ -->
@@ -217,6 +219,7 @@ ul.list li{margin:5px 0}
 
   <!-- RESULT -->
   <section id="result" hidden>
+    <p class="restored" id="rRestored" role="status" hidden></p>
     <div class="rhead" id="rhead">
       <div class="eyebrow">あなたの投資スタイルは</div>
       <h1 id="rName" tabindex="-1"></h1>
@@ -374,6 +377,10 @@ let ans=new Array(Q.length).fill(null), cur=0, locked=false, announced=-1;
 function save(){try{localStorage.setItem(KEY,JSON.stringify({ans,cur}))}catch(e){}}
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||"null");if(d&&Array.isArray(d.ans)&&d.ans.length===Q.length)return d}catch(e){}return null}
 function clear(){try{localStorage.removeItem(KEY)}catch(e){}}
+// 最後の診断結果。次に開いたときに結果画面を出すため、この端末のブラウザにだけ保存する（どこにも送らない）
+const RKEY="gfs-style-result-v1";
+function saveResult(){try{const t=new Date();localStorage.setItem(RKEY,JSON.stringify({ans,at:`${t.getFullYear()}/${t.getMonth()+1}/${t.getDate()}`}))}catch(e){}}
+function loadResult(){try{const d=JSON.parse(localStorage.getItem(RKEY)||"null");if(d&&Array.isArray(d.ans)&&d.ans.length===Q.length&&d.ans.every(v=>[-2,-1,1,2].includes(v)))return d}catch(e){}return null}
 
 function show(id){
   for(const s of ["start","quiz","result"])$(s).hidden=(s!==id);
@@ -410,7 +417,7 @@ function pick(v){
   },260);
 }
 
-function finish(){
+function finish(restoredAt){ // restoredAt があるときは、保存した前回の結果を出し直す（集計には送らない）
   const r=GFSScore.score(ans,Q.map(q=>q[0])), T=TYPES[r.key];
   $("rhead").className="rhead "+r.key;
   $("rName").textContent=T.name; $("rStyle").textContent=T.style; $("rLead").textContent=T.lead;
@@ -448,8 +455,11 @@ function finish(){
   // 講義名はコピー文に入れない（専任コンサルに伝える必要はない、とのフィードバック。2026-10）
   $("copyText").value=lines.join("\n"); $("copyText").hidden=true;
   $("btnCopy").textContent="結果をコピー";
-  collect(GFSScore.buildRecord(r,ans,APP_VERSION));
-  clear(); show("result");
+  if(!restoredAt)collect(GFSScore.buildRecord(r,ans,APP_VERSION));
+  if(!restoredAt){clear(); saveResult()}
+  $("rRestored").hidden=!restoredAt;
+  if(restoredAt)$("rRestored").textContent=`前回（${restoredAt}）の診断結果です。診断し直すときは、いちばん下の「もう一度診断する」からどうぞ。`;
+  show("result");
 }
 
 $("btnStart").onclick=()=>{ans=new Array(Q.length).fill(null);cur=0;clear();show("quiz");renderQ()};
@@ -485,8 +495,10 @@ function collect(rec){
       headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(rec)}).catch(()=>{});
   }catch(e){}
 }
-function refreshResume(){const d=load();$("btnResume").hidden=!(d&&d.ans.some(v=>v!==null))}
-refreshResume();
+function refreshResume(){const d=load();$("btnResume").hidden=!(d&&d.ans.some(v=>v!==null)); $("btnLast").hidden=!loadResult()}
+$("btnLast").onclick=()=>{const L=loadResult(); if(L){ans=L.ans.slice(); finish(L.at)}};
+// 前回の結果があれば、開いたときに結果画面を出す（もう一度診断するは結果画面のいちばん下）
+{const L=loadResult(); if(L){ans=L.ans.slice(); finish(L.at)} else refreshResume();}
 })();
 </script>
 </body>

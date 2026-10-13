@@ -409,3 +409,12 @@ test("結果画面：必修講義の復習（テクニカル分析・ファン�
   // 「必修講義で復習しよう」は「次に見る講義」より前
   assert.ok(HTML.indexOf("<h2>必修講義で復習しよう</h2>")<HTML.indexOf("次に見る講義<span"));
 });
+
+test("前回の結果：保存して次に開いたときに出す。出し直しでは集計に送らず、途中の回答も消さない", ()=>{
+  assert.ok(HTML.includes('const RKEY="gfs-style-result-v1";'));
+  const f=HTML.slice(HTML.indexOf("function finish(restoredAt){"),HTML.indexOf("\n}\n",HTML.indexOf("function finish(restoredAt){")));
+  assert.match(f,/if\(!restoredAt\)collect\(/);
+  assert.match(f,/if\(!restoredAt\)\{clear\(\); saveResult\(\)\}/);
+  assert.match(HTML,/id="btnLast"[^>]*>前回の結果を見る</);
+  assert.match(HTML,/id="rRestored"/);
+});
