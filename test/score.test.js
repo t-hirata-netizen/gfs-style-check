@@ -295,7 +295,7 @@ test("集計は本番の公開ページだけで送り、手元の確認や試�
   assert.equal(at("https:","t-hirata-netizen.github.io","/gfs-style-check/"),true);
   assert.equal(at("https:","t-hirata-netizen.github.io","/gfs-style-check/index.html"),true);
   assert.equal(at("https:","t-hirata-netizen.github.io","/gfs-style-check"),true);
-  assert.equal(at("https:","t-hirata-netizen.github.io","/gfs-style-check-preview/"),false); // 試作版
+  assert.equal(at("https:","t-hirata-netizen.github.io","/gfs-kabu-shindan/"),false); // 試作版
   assert.equal(at("https:","someone-else.github.io","/gfs-style-check/"),false);
   assert.equal(at("http:","localhost","/"),false);
   assert.equal(at("file:","","/Users/x/index.html"),false);

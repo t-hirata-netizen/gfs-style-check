@@ -201,7 +201,7 @@ git add -A && git commit -m "…" && git push
 ## 匿名の集計
 
 - 送り先：Googleスプレッドシートに付けた Apps Script（`tools/collect.gs`）を「ウェブアプリ」として公開し、その URL を `index.html` の `COLLECT_URL` に入れる。空なら何も送らない
-- 送るのは本番の公開ページ（`https://t-hirata-netizen.github.io/gfs-style-check/`）からだけ。localhost やファイルで開いたとき、試作版など別のリポジトリ（`/gfs-style-check-preview/` など）で開いたときは送らない（確認作業や試しの回答で集計を汚さないため）。**本番のリポジトリ名を変えたら `score.js` の `collectAllowed()` も直す**
+- 送るのは本番の公開ページ（`https://t-hirata-netizen.github.io/gfs-style-check/`）からだけ。localhost やファイルで開いたとき、試作版など別のリポジトリ（`/gfs-kabu-shindan/` など）で開いたときは送らない（確認作業や試しの回答で集計を汚さないため）。**本番のリポジトリ名を変えたら `score.js` の `collectAllowed()` も直す**
 - 記録する列：日付（時刻は残さない）・版・タイプ・テクニカル%・ファンダ%・Q1〜Q22（-2,-1,1,2）。時刻・IPアドレス・端末情報は記録しない
   - 時刻を残さないのは、専任コンサルに届く「結果をコピー」の内容と時刻で突き合わせると、本人が分かるおそれがあるため
 - `COLLECT_URL` は公開リポジトリに載るので、誰でも送れてしまう。`collect.gs` の `isValid()` で形の崩れたデータは記録しない。それでも、いたずらで正しい形のデータを送られることは防げない
