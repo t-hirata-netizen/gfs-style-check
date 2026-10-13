@@ -102,9 +102,10 @@
     return {v:String(v), type:r.key, pa:r.pa, pb:r.pb, ans:ans.slice()};
   }
 
-  // 集計に送ってよい場所か。公開ページ（GitHub Pages）だけ送り、手元での確認（localhost・ファイル）では送らない
+  // 集計に送ってよい場所か。本番の公開ページ（https://t-hirata-netizen.github.io/gfs-style-check/）だけ送る
+  // 手元での確認（localhost・ファイル）や、試作版などの別のリポジトリ（/gfs-style-check-preview/ など）では送らない
   function collectAllowed(loc){
-    return loc.protocol==="https:" && /\.github\.io$/.test(loc.hostname);
+    return loc.protocol==="https:" && loc.hostname==="t-hirata-netizen.github.io" && /^\/gfs-style-check(\/|$)/.test(loc.pathname);
   }
 
   const api={score,pickCourses,pickLives,axisLean,buildRecord,collectAllowed};

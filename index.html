@@ -145,6 +145,7 @@ ul.list li{margin:5px 0}
 .cr .ds{font-size:14px;margin-top:2px}
 .cr .go{display:inline-block;margin-top:10px;padding:8px 14px;border-radius:10px;font-weight:900;font-size:14px;text-decoration:none}
 .cr.tech .go{background:var(--tech);color:var(--on-tech)}.cr.fund .go{background:var(--fund);color:var(--on-fund)}
+.h2sub{display:block;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em;margin-top:2px}
 .lives{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .lv{display:grid;grid-template-columns:1fr auto;column-gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--body);background:var(--surface)}
 .lv:hover{border-color:var(--muted)}
@@ -239,16 +240,22 @@ ul.list li{margin:5px 0}
       <ul class="list" id="rCare"></ul>
     </div>
     <div class="card">
-      <h2>次に見る講義</h2>
-      <p style="margin:0 0 10px;font-size:14px">実践コースは、講義一覧で基礎を学んでから進むのがおすすめです。</p>
+      <h2>必修講義で復習しよう</h2>
+      <p style="margin:0 0 10px;font-size:14px">必修講義を受講中の方も、修了した方も見られます。タイプに合う分析を、もう一度見直してみましょう。</p>
+      <ul class="lives" id="rCompulsory"></ul>
+    </div>
+
+    <div class="card">
+      <h2>次に見る講義<span class="h2sub">必修講義を修了した方向け</span></h2>
+      <p style="margin:0 0 10px;font-size:14px">ここからの講義は、必修講義を修了すると見られるようになります。実践コースは、講義一覧で基礎を学んでから進むのがおすすめです。</p>
       <div class="course" id="rCourse"></div>
       <p class="note">ほかの実践コースも見たいときは <a class="all" href="https://gfs.tokyo/inv-methods/" target="_blank" rel="noopener">実践コース一覧（全9コース）→</a>。各コースの特徴を解説した動画もあります。</p>
       <p class="note">迷ったら、専任コンサルに「診断で〇〇型だった。次はどの講義？」と聞いてください。</p>
     </div>
 
     <div class="card">
-      <h2>あわせて見たいライブ講義</h2>
-      <p style="margin:0 0 10px;font-size:14px">過去のライブ講義は、いつでも見返せます。タップすると一覧が開きます。</p>
+      <h2>あわせて見たいライブ講義<span class="h2sub">必修講義を修了した方向け</span></h2>
+      <p style="margin:0 0 10px;font-size:14px">過去のライブ講義は、必修講義を修了すると見返せるようになります。タップすると一覧が開きます。</p>
       <ul class="lives" id="rLives"></ul>
     </div>
 
@@ -266,7 +273,7 @@ ul.list li{margin:5px 0}
 
 <p class="toast" id="closeNote" role="status" hidden>このブラウザでは自動で閉じられません。画面の上にある「×」や「完了」で閉じてください。</p>
 
-<script src="score.js?v=b97313bb"></script><!-- ?v= は score.js の中身から作る記号（SHA-1 の先頭8文字）。score.js を変えたら npm test が新しい値を教えてくれる -->
+<script src="score.js?v=bfe68f94"></script><!-- ?v= は score.js の中身から作る記号（SHA-1 の先頭8文字）。score.js を変えたら npm test が新しい値を教えてくれる -->
 <script>
 (function(){
 const AXES=[
@@ -326,6 +333,11 @@ const COURSES={
  ricky:     {cat:"fund",nm:"実践コース：リッキー講師",url:"https://gfs.tokyo/inv-methods/course/fundamentals/ricky.php",ds:"売らずに育てる資産形成、配当戦略実践コース"},
  rironkabuo:{cat:"fund",nm:"実践コース：りろんかぶお講師",url:"https://gfs.tokyo/inv-methods/course/fundamentals/RironKabuo.php",ds:"AI時代の成長戦略を学ぶ、米国株投資コース"},
  tenbagger: {cat:"fund",nm:"実践コース：テンバガー投資家X",url:"https://gfs.tokyo/inv-methods/course/fundamentals/tenbagger-x.php",ds:"10倍株を掴む、IPOセカンダリー投資コース"}
+};
+// 必修講義の復習（必修講義を受講中の人も、修了した人も見られる）。リンクは必修講義のマイページ
+const COMPULSORY={
+ tech:{cat:"tech",nm:"必修講義「テクニカル分析」",ds:"全25講義。ローソク足・移動平均線・出来高から、シナリオの作り方まで。マイページの「03. 個別株投資を学ぶ」にあります",link:"https://gfs.tokyo/compulsory/mypage/"},
+ fund:{cat:"fund",nm:"必修講義「ファンダメンタルズ分析」",ds:"全19講義。株価の公式・PER・割安の考え方から、銘柄の選び方まで。マイページの「03. 個別株投資を学ぶ」にあります",link:"https://gfs.tokyo/compulsory/mypage/"}
 };
 // ライブ講義（過去回の一覧ページへ移る）。どれを出すかは score.js の pickLives() が決める
 // href は gfs.tokyo のページだけ。ログインした人ごとの識別用パラメータは付けない
@@ -423,6 +435,10 @@ function finish(){
   $("rCare").innerHTML=T.care.map(x=>`<li>${x}</li>`).join("");
   const courses=GFSScore.pickCourses(r,ans).map(p=>({...COURSES[p.id],tag:p.tag,cls:COURSES[p.id].cat+(p.main?" main":"")}));
   $("rCourse").innerHTML=courses.map(c=>`<div class="cr ${c.cls}"><div class="tag">${c.tag}</div><div class="nm">${c.nm}</div><div class="ds">${c.ds}</div>${c.url?`<a class="go" href="${c.url}" target="_blank" rel="noopener">講義を見る →</a>`:""}</div>`).join("");
+  // 必修講義の復習：タイプに合う方を先に。僅差なら両方を「見比べる」
+  const close=Math.max(r.pa,r.pb)<=60;
+  const comp=(r.key==="tech"?["tech","fund"]:["fund","tech"]).map((k,i)=>({...COMPULSORY[k],tag:close?"両方を見比べるなら":i===0?"あなたのタイプの復習に":"もう一方の考え方も知るなら"}));
+  $("rCompulsory").innerHTML=comp.map(c=>`<li><a class="lv ${c.cat}" href="${c.link}" target="_blank" rel="noopener"><span class="lv-tag">${c.tag}</span><span class="lv-nm">${c.nm}</span><span class="lv-ds">${c.ds}</span><span class="lv-go" aria-hidden="true">→</span></a></li>`).join("");
   const lives=typeof GFSScore.pickLives==="function"?GFSScore.pickLives(r,ans):[]; // 古い score.js が残っていても結果画面は出す
   $("rLives").closest(".card").hidden=lives.length===0;
   $("rLives").innerHTML=lives.map(p=>{const L=LIVES[p.id];
